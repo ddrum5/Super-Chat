@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "539716075336",
+    "firebase_url": "https://super-chat-vip-pro-default-rtdb.firebaseio.com",
+    "project_id": "super-chat-vip-pro",
+    "storage_bucket": "super-chat-vip-pro.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:539716075336:android:3681aec572089fb9967d7d",
+        "android_client_info": {
+          "package_name": "com.ddrum.superchatvippro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "539716075336-bj556hh5v0eo15b1mnhngqf9j7t111cj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ddrum.superchatvippro",
+            "certificate_hash": "912870a3c2604fd27561611e78a1ed8d36cf9525"
+          }
+        },
+        {
+          "client_id": "539716075336-9e9b5maknqavkhf4nj4uovfa3l3ts6mt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhL746XlKCk8lPOlR8GB4f-NO8V8LLSNs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "539716075336-9e9b5maknqavkhf4nj4uovfa3l3ts6mt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
