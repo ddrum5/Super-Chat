@@ -1,23 +1,34 @@
 package com.ddrum.superchatvippro.view.activity;
 
+
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.util.Util;
 import com.ddrum.superchatvippro.Adapter.ViewPagerAdapter;
+import com.ddrum.superchatvippro.Animation.DepthPageTransformer;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.model.User;
@@ -33,13 +44,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class MainActivity extends AppCompatActivity {
 
     private MainViewModel viewModel;
-    private ViewPagerAdapter viewPagerAdapter;
-
 
     //Authentication
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
     private String userId;
+    private User mUser;
 
     //Database
     private DatabaseReference reference;
@@ -48,10 +58,11 @@ public class MainActivity extends AppCompatActivity {
     private AppCompatTextView txtName;
     private AppCompatTextView titleToolbar;
     private AppCompatButton btnLogout;
-    private ViewPager viewPager;
+    private ViewPager2 viewPager;
     private BottomNavigationView bottomNavigation;
     private CircleImageView imgAvatar;
 
+    private Dialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,36 +78,50 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getListFriend(reference, userId);
         // nên tất cả các Fragment kia muốn lấy thằng currentUser hì đều phải requireActivity() tức là MainActivity (Vì các Fragment khác đều là con của MainActivity)
 
+
+        mUser = new User();
         //Lắng nghe currentUser thay đổi
         viewModel.currentUser.observe(this, new Observer<User>() {
             @Override
             public void onChanged(User user) {
+                mUser.setUsername(user.getUsername());
+                mUser.setEmail(user.getEmail());
                 txtName.setText(user.getUsername());
+                ;
             }
         });
-        if(currentUser.getPhotoUrl() != null){
+        if (currentUser.getPhotoUrl() != null) {
             Glide.with(this).load(currentUser.getPhotoUrl()).into(imgAvatar);
         }
 
-
-
-
-
-
-
         //Bottm Navigation
-        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-        viewPager.setAdapter(viewPagerAdapter);
+        navigation();
+        //Log out
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAlertDialog();
+            }
+        });
+        avatarClick();
 
+
+
+    }
+
+//Method
+
+    private void navigation() {
+//        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        viewPager.setAdapter(new ViewPagerAdapter(this));
+        viewPager.setPageTransformer(new DepthPageTransformer());
         titleToolbar.setText(getString(R.string.chat));
         viewPager.setCurrentItem(0);
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            }
 
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
+                super.onPageSelected(position);
                 switch (position) {
                     case 0:
                         bottomNavigation.getMenu().findItem(R.id.menu_chat).setChecked(true);
@@ -112,12 +137,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
             }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
         });
-
         bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -136,13 +156,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAlertDialog();
-            }
-        });
     }
 
 
@@ -170,12 +183,85 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void avatarClick() {//
+         imgAvatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog = new Dialog(MainActivity.this);
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.dialog_edit_user_name);
+                Window window = dialog.getWindow();
+                if (window == null) {
+                    return;
+                }
+                window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                WindowManager.LayoutParams windowAttributes = window.getAttributes();
+                windowAttributes.gravity = Gravity.CENTER;
+                window.setAttributes(windowAttributes);
+
+                AppCompatButton btnXong = dialog.findViewById(R.id.btn_xong);
+                CircleImageView imgAvatar = dialog.findViewById(R.id.img_avatar);
+                AppCompatTextView tvUsername = dialog.findViewById(R.id.tv_username);
+                AppCompatButton btnEdit = dialog.findViewById(R.id.btn_edit);
+                AppCompatButton btnSave = dialog.findViewById(R.id.btn_save);
+                AppCompatTextView tvEmail = dialog.findViewById(R.id.tv_email);
+                AppCompatEditText edtInput = dialog.findViewById(R.id.edt_input);
+
+                tvUsername.setText(mUser.getUsername());
+                tvEmail.setText(mUser.getEmail());
+
+                btnEdit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        btnEdit.setVisibility(View.GONE);
+                        btnSave.setVisibility(View.VISIBLE);
+                        edtInput.setText(mUser.getUsername());
+                        edtInput.requestFocus();
+                    }
+                });
+
+                btnSave.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String newName = edtInput.getText().toString().trim();
+                        if (!TextUtils.isEmpty(newName)) {
+                            reference.child(Constant.USER)
+                                    .child(userId)
+                                    .child("username")
+                                    .setValue(newName);
+                            tvUsername.setText(newName);
+                        } else {
+                            Toast.makeText(MainActivity.this, "Ten trong", Toast.LENGTH_SHORT).show();
+                        }
+                        edtInput.setText("");
+                        btnEdit.setVisibility(View.VISIBLE);
+                        btnSave.setVisibility(View.GONE);
+                    }
+                });
+
+
+                btnXong.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
+            }
+        });
+    }
+
+
+
     private void firebase() {
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
         userId = currentUser.getUid();
         reference = FirebaseDatabase.getInstance().getReference(); //Trỏ tới database
     }
+
 
     private void initView() {
 

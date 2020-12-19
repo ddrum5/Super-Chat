@@ -3,8 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ImageView
-        android:src="@drawable/splash_screen_test"
-        android:scaleType="centerCrop"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_gravity="center"
+        android:src="@drawable/logo_super_chat"
+        android:layout_marginBottom="50dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"/>
 </FrameLayout>

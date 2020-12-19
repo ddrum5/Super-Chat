@@ -2,7 +2,9 @@ package com.ddrum.superchatvippro.view.authentication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Toast;
 
@@ -42,40 +44,85 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
         initView();
         firebase();
 
+        btnRegisterIsEnable();
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(edtUsername.getText()) || TextUtils.isEmpty(edtPassword.getText())) {
-                    Toast.makeText(RegisterActivity.this, "Empty user information!", Toast.LENGTH_SHORT).show();
-                } else {
-                    String user = edtUsername.getText().toString().trim();
-                    String email = edtEmail.getText().toString().trim();
-                    String pass = edtPassword.getText().toString();
-                    String passConfirm = edtPasswordConfirm.getText().toString();
-                    if (!pass.equals(passConfirm)) {
-                        Toast.makeText(RegisterActivity.this, "Password must be same!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                String userId = task.getResult().getUser().getUid();
-                                createUserAndLogin(userId, user, email, pass);
-                            } else {
-                                Toast.makeText(RegisterActivity.this, "Something error!!!", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                }
+                registerClick();
             }
         });
 
+
     }
+
+// Method
+
+    private void btnRegisterIsEnable() {
+        edtUsername.addTextChangedListener(textWatcher);
+        edtEmail.addTextChangedListener(textWatcher);
+        edtPassword.addTextChangedListener(textWatcher);
+        edtPasswordConfirm.addTextChangedListener(textWatcher);
+    }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            String user = edtUsername.getText().toString().trim();
+            String email = edtEmail.getText().toString().trim();
+            String pass = edtPassword.getText().toString();
+            String passConfirm = edtPasswordConfirm.getText().toString();
+            btnRegister.setEnabled(
+                    !TextUtils.isEmpty(user) &&
+                            !TextUtils.isEmpty(email) &&
+                            !TextUtils.isEmpty(pass) &&
+                            !TextUtils.isEmpty(passConfirm));
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+        }
+    };
+
+
+    private void registerClick() {
+        String user = edtUsername.getText().toString().trim();
+        String email = edtEmail.getText().toString().trim();
+        String pass = edtPassword.getText().toString();
+        String passConfirm = edtPasswordConfirm.getText().toString();
+
+
+        if (!pass.equals(passConfirm)) {
+            Toast.makeText(RegisterActivity.this, "Xác nhận mật khẩu không đúng", Toast.LENGTH_SHORT).show();
+            edtPasswordConfirm.requestFocus();
+            return;
+        } else {
+            if (pass.length() < 6) {
+                Toast.makeText(this, "Mật khẩu phải có 6 kí tự trở lên", Toast.LENGTH_SHORT).show();
+                edtPassword.requestFocus();
+                return;
+            }
+        }
+        auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    String userId = task.getResult().getUser().getUid();
+                    createUserAndLogin(userId, user, email, pass);
+                } else {
+                    Toast.makeText(RegisterActivity.this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
+                    edtEmail.requestFocus();
+                }
+            }
+        });
+    }
+
 
     private void createUserAndLogin(String userId, String username, String email, String pass) {
         User user = new User();
@@ -89,18 +136,18 @@ public class RegisterActivity extends AppCompatActivity {
         reference.child(Constant.USER).child(userId).setValue(user) //Set Value chỉ đến đây thôi
                 //Dòng dưới này là để check xem api call có thành công hay không
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Toast.makeText(RegisterActivity.this, "Create user successful", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Something error!!!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(RegisterActivity.this, "Tạo tài khoản thành công", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(RegisterActivity.this, "Something error!!!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 
     private void firebase() {
@@ -115,4 +162,5 @@ public class RegisterActivity extends AppCompatActivity {
         edtPasswordConfirm = findViewById(R.id.edt_password_confirm);
         btnRegister = findViewById(R.id.btn_register);
     }
+
 }

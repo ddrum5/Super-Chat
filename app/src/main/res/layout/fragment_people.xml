@@ -5,11 +5,7 @@
     android:padding="16dp"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:clickable="true"
-    android:focusable="true"
-    android:focusableInTouchMode="true">
-
-    <requestFocus/>
+>
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/edtSearch"
