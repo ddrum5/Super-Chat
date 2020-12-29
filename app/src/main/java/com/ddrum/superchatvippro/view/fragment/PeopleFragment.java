@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.ddrum.superchatvippro.Adapter.PeopleAdapter;
+import com.ddrum.superchatvippro.adapter.PeopleAdapter;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.model.User;

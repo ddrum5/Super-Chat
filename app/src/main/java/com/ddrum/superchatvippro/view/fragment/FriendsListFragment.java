@@ -17,8 +17,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.ddrum.superchatvippro.Adapter.FriendAdapter;
-import com.ddrum.superchatvippro.Adapter.RequestAdapter;
+import com.ddrum.superchatvippro.adapter.FriendAdapter;
+import com.ddrum.superchatvippro.adapter.RequestAdapter;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.model.User;
@@ -88,7 +88,6 @@ public class FriendsListFragment extends Fragment {
                 otherUser.setUsername(otherUserName);
                 reference.child(Constant.FRIEND).child(currentUserId).child(otherUserId).setValue(otherUser);
 
-
                 User currentUser = new User();
                 currentUser.setId(currentUserId);
                 currentUser.setUsername(viewModel.currentUser.getValue().getUsername());
@@ -128,21 +127,21 @@ public class FriendsListFragment extends Fragment {
                         .orderByChild("username").startAt(s.toString()).endAt(s + "\uf8ff");
                 friendAdapter = new FriendAdapter(requireContext(), viewModel, query);
                 rcvFriendList.setAdapter(friendAdapter);
-                unfriendClick();
+                unFriendClick();
             }
 
             @Override
             public void afterTextChanged(Editable s) {
             }
         });
-        unfriendClick();
+        unFriendClick();
     }
 
 
-    private void unfriendClick() {
+    private void unFriendClick() {
         friendAdapter.setOnUnfriendClick(new FriendAdapter.Callback() {
             @Override
-            public void onClickUnfriend(int position, String userOtherId) {
+            public void onClickUnFriend(int position, String userOtherId) {
                 String currentUserId = currentUser.getUid();
                 reference.child(Constant.FRIEND).child(currentUserId).child(userOtherId).setValue(null);
                 reference.child(Constant.FRIEND).child(userOtherId).child(currentUserId).setValue(null);
@@ -153,6 +152,7 @@ public class FriendsListFragment extends Fragment {
                 Intent intent = new Intent(requireContext(), ChatActivity.class);
                 intent.putExtra("otherId", userOtherId);
                 startActivity(intent);
+                requireActivity().overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
             }
         });
     }

@@ -3,37 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginBottom="5dp"
     android:orientation="vertical"
-    android:paddingTop="16dp"
-    >
-
+    android:paddingTop="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp">
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/imgAvatar"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="#CCCCCC" />
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/imgOnline"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="3dp"
-                android:src="@drawable/ic_online" />
-
-        </FrameLayout>
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:src="@drawable/default_avatar"
+            android:layout_marginEnd="10dp" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/txtName"
@@ -45,23 +30,35 @@
             android:textSize="20sp"
             tools:text="Name" />
 
-        <androidx.appcompat.widget.AppCompatButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAccept"
-            android:backgroundTint="#2196F3"
-            android:textColor="@color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="10dp"
-            android:text="Chấp nhận" />
+            android:textAllCaps="false"
+            android:paddingHorizontal="10dp"
 
-        <androidx.appcompat.widget.AppCompatButton
+            app:cornerRadius="8dp"
+            android:text="Chấp nhận"
+            app:icon="@drawable/ic_friend_request"
+            app:iconSize="20dp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDeny"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="10dp"
-            android:text="Xoá" />
+            android:textAllCaps="false"
+            android:paddingHorizontal="10dp"
+
+            app:cornerRadius="8dp"
+            android:backgroundTint="@color/gray_spLite"
+            android:text="Xoá"
+            android:textColor="@color/black"
+            app:iconSize="20dp"
+            />
 
     </LinearLayout>
 
@@ -69,8 +66,7 @@
         android:id="@+id/stroke"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="5dp"
-        android:background="@android:color/darker_gray" />
+        android:layout_marginTop="3dp"
+        android:background="@color/gray_spLite" />
 
 </LinearLayout>

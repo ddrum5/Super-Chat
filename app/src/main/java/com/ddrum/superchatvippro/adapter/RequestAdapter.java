@@ -1,19 +1,20 @@
-package com.ddrum.superchatvippro.Adapter;
+package com.ddrum.superchatvippro.adapter;
 
 import android.content.Context;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.view.activity.MainActivity;
 import com.ddrum.superchatvippro.view.activity.MainViewModel;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.Query;
 
 import java.util.HashMap;
@@ -42,10 +43,10 @@ public class RequestAdapter extends FirebaseRecyclerAdapter<String, RequestAdapt
         viewModel.listUser.observe((MainActivity) context, new Observer<HashMap<String, Object>>() {
             @Override
             public void onChanged(HashMap<String, Object> hashMap) {
-
-                HashMap<String, Object> map = (HashMap<String, Object>) hashMap.get(otherUserId);
-                viewHolder.txtName.setText(String.valueOf(map.get("username")));
-
+                HashMap<String, String> map = (HashMap<String, String>) hashMap.get(otherUserId);
+                viewHolder.txtName.setText(map.get("username"));
+                String url = map.get("photoUrl");
+                Glide.with(context).load(url).into(viewHolder.imgAvatar);
             }
         });
 
@@ -76,9 +77,9 @@ public class RequestAdapter extends FirebaseRecyclerAdapter<String, RequestAdapt
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         AppCompatTextView txtName;
-        CircleImageView imgAvatar,imOnline;
-        AppCompatButton btnAccept;
-        AppCompatButton btnDeny;
+        CircleImageView imgAvatar;
+        MaterialButton btnAccept;
+        MaterialButton btnDeny;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -86,7 +87,6 @@ public class RequestAdapter extends FirebaseRecyclerAdapter<String, RequestAdapt
             txtName = itemView.findViewById(R.id.txtName);
             btnAccept = itemView.findViewById(R.id.btnAccept);
             btnDeny = itemView.findViewById(R.id.btnDeny);
-            imOnline = itemView.findViewById(R.id.imgOnline);
         }
     }
 }

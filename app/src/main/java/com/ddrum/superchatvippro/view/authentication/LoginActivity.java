@@ -27,6 +27,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,8 +40,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private AppCompatEditText edtEmail;
     private AppCompatEditText edtPassword;
-    private AppCompatButton btnLogin;
-    private AppCompatButton btnRegister;
+    private MaterialButton btnLogin;
+    private MaterialButton btnRegister;
 
     private FirebaseAuth auth;
     private SignInButton btnSignInWithGoogle;
@@ -90,7 +91,6 @@ public class LoginActivity extends AppCompatActivity {
 //Button login enable?
         edtEmail.addTextChangedListener(loginTextWatcher);
         edtPassword.addTextChangedListener(loginTextWatcher);
-
 
     }
 
@@ -159,8 +159,9 @@ public class LoginActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             Log.d("LoginActivity", "signInWithCredential:success");
-                            putDataIntoDatabase();
+//                            FirebaseUser currentUser = auth.getCurrentUser();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+//                            intent.putExtra("ID",currentUser.getUid());
                             startActivity(intent);
                             finish();
                         } else {
@@ -170,16 +171,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void putDataIntoDatabase() {
-        FirebaseUser currentUser = auth.getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
-        User user = new User();
-        user.setId(currentUser.getUid());
-        user.setEmail(currentUser.getEmail());
-        user.setUsername(currentUser.getDisplayName());
-        reference.child(Constant.USER).child(currentUser.getUid()).setValue(user);
-    }
 
 
     private void initView() {

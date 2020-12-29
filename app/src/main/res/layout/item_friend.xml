@@ -3,10 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginBottom="5dp"
     android:orientation="vertical"
     android:paddingTop="16dp"
-
+    android:gravity="center_horizontal"
     >
 
 
@@ -16,24 +17,24 @@
         android:orientation="horizontal">
 
         <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp">
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginEnd="5dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/imgAvatar"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="#CCCCCC" />
+                android:layout_width="@dimen/avatar_size"
+                android:layout_height="@dimen/avatar_size"
+                android:layout_gravity="start"
+                android:src="@drawable/default_avatar" />
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/imgOnline"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_gravity="bottom|end"
-                android:layout_margin="3dp"
+                android:layout_marginBottom="4dp"
                 android:src="@drawable/ic_online" />
-
         </FrameLayout>
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -46,13 +47,19 @@
             android:textSize="20sp"
             tools:text="Name" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_unfriend"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnUnFriend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="10dp"
-            android:text="Huỷ kết bạn" />
+            android:textAllCaps="false"
+            android:paddingHorizontal="10dp"
+            app:cornerRadius="8dp"
+            android:text="Huỷ kết bạn"
+            app:icon="@drawable/ic_unfriend"
+            app:iconSize="20dp"
+            />
 
     </LinearLayout>
 
@@ -60,8 +67,7 @@
         android:id="@+id/stroke"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="5dp"
-        android:background="@android:color/darker_gray" />
+        android:layout_marginTop="3dp"
+        android:background="@color/gray_spLite" />
 
 </LinearLayout>

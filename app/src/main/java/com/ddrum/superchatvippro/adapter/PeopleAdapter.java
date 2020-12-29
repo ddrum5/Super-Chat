@@ -1,0 +1,172 @@
+package com.ddrum.superchatvippro.adapter;
+
+import android.content.Context;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.ddrum.superchatvippro.R;
+import com.ddrum.superchatvippro.model.User;
+import com.ddrum.superchatvippro.view.activity.MainActivity;
+import com.ddrum.superchatvippro.view.activity.MainViewModel;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.material.button.MaterialButton;
+import com.google.firebase.database.Query;
+
+import java.util.HashMap;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+
+public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.ViewHolder> {
+
+
+    private Callback callback;
+    private MainViewModel mainViewModel;
+    private Context context;
+    private String currentId;
+
+    public void setOnAddFriendClick(Callback callback) {
+        this.callback = callback;
+    }
+
+    public PeopleAdapter(Context context, MainViewModel viewModel, Query ref) {
+        super(User.class, R.layout.item_people, ViewHolder.class, ref);
+        this.context = context;
+        this.mainViewModel = viewModel;
+    }
+
+    @Override
+    protected void populateViewHolder(ViewHolder viewHolder, User user, int position) {
+        viewHolder.imgOnline.setVisibility(View.GONE);
+
+        Glide.with(context).load(user.getPhotoUrl()).into(viewHolder.imgAvatar);
+        mainViewModel.currentUser.observe((MainActivity) context, new Observer<User>() {
+            @Override
+            public void onChanged(User currentUser) {
+                String name = "";
+                if (currentUser.getId().equals(user.getId())) {
+                    currentId = currentUser.getId();
+                    viewHolder.btnAdd.setVisibility(View.INVISIBLE);
+                    name = user.getUsername() + " (Bạn)";
+                } else {
+                    viewHolder.btnAdd.setVisibility(View.VISIBLE);
+                    name = user.getUsername();
+                }
+                viewHolder.txtName.setText(name);
+            }
+        });
+        viewHolder.btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (callback != null)
+                    callback.onClick(position, user, viewHolder.btnAdd.getText().equals("Kết bạn"));
+            }
+        });
+
+
+//        mainViewModel.listReceiver.observe((MainActivity) context, new Observer<HashMap<String, Object>>() {
+//            @Override
+//            public void onChanged(HashMap<String, Object> hashMap) {
+//                if (hashMap != null && hashMap.get(user.getId()) != null) {
+//                    showReceived(viewHolder);
+//                }
+//            }
+//        });
+
+
+        mainViewModel.listFriends.observe((MainActivity) context, new Observer<HashMap<String, Object>>() {
+            @Override
+            public void onChanged(HashMap<String, Object> hashMap) {
+                if (hashMap != null && hashMap.get(user.getId()) != null) {
+                    HashMap<String, Object> map = (HashMap<String, Object>) hashMap.get(user.getId());
+                    showFriend(viewHolder);
+                    viewHolder.imgOnline.setVisibility(user.getOnline().equals("true") ? View.VISIBLE : View.INVISIBLE);
+                } else {
+                    viewHolder.imgOnline.setVisibility(View.INVISIBLE);
+                    showAdd(viewHolder);
+                    mainViewModel.listSender.observe((MainActivity) context, new Observer<HashMap<String, Object>>() {
+                        @Override
+                        public void onChanged(HashMap<String, Object> hashMap) {
+                            if (hashMap != null) {
+                                if (hashMap.get(user.getId()) != null) {
+                                    showCancelRequestButton(viewHolder);
+                                } else {
+                                    showRequestButton(viewHolder);
+                                }
+                            } else {
+                                showRequestButton(viewHolder);
+                            }
+
+                        }
+                    });
+                }
+            }
+        });
+
+
+    }
+
+    private void showFriend(ViewHolder viewHolder) {
+        viewHolder.btnFriend.setVisibility(View.VISIBLE);
+        viewHolder.btnAdd.setVisibility(View.GONE);
+        viewHolder.btnReceived.setVisibility(View.GONE);
+    }
+
+    private void showReceived(ViewHolder viewHolder) {
+        viewHolder.btnReceived.setVisibility(View.VISIBLE);
+        viewHolder.btnAdd.setVisibility(View.GONE);
+        viewHolder.btnFriend.setVisibility(View.GONE);
+    }
+
+    private void showAdd(ViewHolder viewHolder) {
+        viewHolder.btnAdd.setVisibility(View.VISIBLE);
+        viewHolder.btnReceived.setVisibility(View.GONE);
+        viewHolder.btnFriend.setVisibility(View.GONE);
+    }
+
+    private void showRequestButton(ViewHolder viewHolder) {
+        viewHolder.btnAdd.setText("Kết bạn");
+        viewHolder.btnAdd.setIconResource(R.drawable.ic_friend_request);
+        viewHolder.btnAdd.setBackgroundColor(context.getColor(R.color.primary));
+        viewHolder.btnAdd.setTextColor(context.getColor(R.color.white));
+        viewHolder.btnAdd.setIconTint(context.getColorStateList(R.color.white));
+    }
+
+    private void showCancelRequestButton(ViewHolder viewHolder) {
+        viewHolder.btnAdd.setText("Huỷ lời mời");
+        viewHolder.btnAdd.setIconResource(R.drawable.ic_unfriend);
+        viewHolder.btnAdd.setBackgroundColor(context.getColor(R.color.gray_spLite));
+        viewHolder.btnAdd.setTextColor(context.getColor(R.color.gray_dark));
+        viewHolder.btnAdd.setIconTint(context.getColorStateList(R.color.gray));
+    }
+
+
+    public interface Callback {
+        void onClick(int position, User user, boolean isReceived);
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        AppCompatTextView txtName;
+        CircleImageView imgAvatar, imgOnline;
+        MaterialButton btnAdd, btnFriend, btnReceived;
+        View stroke;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            imgOnline = itemView.findViewById(R.id.imgOnline);
+            imgAvatar = itemView.findViewById(R.id.imgAvatar);
+            txtName = itemView.findViewById(R.id.txtName);
+            btnAdd = itemView.findViewById(R.id.btnAdd);
+            stroke = itemView.findViewById(R.id.stroke);
+            btnFriend = itemView.findViewById(R.id.btnFriend);
+            btnReceived = itemView.findViewById(R.id.btnReceived);
+        }
+    }
+
+
+}

@@ -4,30 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="5dp"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingTop="16dp">
-
+    android:paddingTop="11dp">
 
     <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="15dp">
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginEnd="5dp">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgAvatar"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="#8A8787" />
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:layout_gravity="start"
+            android:src="@drawable/default_avatar" />
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgOnline"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="bottom|end"
-            android:layout_margin="2dp"
+            android:layout_marginBottom="4dp"
             android:src="@drawable/ic_online" />
-
     </FrameLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -43,39 +44,54 @@
             android:textSize="20sp"
             tools:text="Name" />
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/txtLastMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="5dp"
-                android:maxLength="32"
-                android:maxLines="1"
-                android:textColor="@color/gray"
-                android:textSize="16sp"
-                tools:text="Bạn: Super chat vip pro ∙ " />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/txtLastTime"
-                android:maxLines="1"
-                android:layout_gravity="center_vertical"
-                android:textColor="@color/gray"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="20:10 SA" />
-        </LinearLayout>
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/txtLastMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="5dp"
+                    android:maxLength="32"
+                    android:maxLines="1"
+                    android:textColor="@color/gray"
+                    android:textSize="16sp"
+                    tools:text="Bạn: Super chat vip pro ∙ " />
 
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/txtLastTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="20:10 SA"
+                    android:textColor="@color/gray" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/dotSeen"
+                android:layout_alignParentEnd="true"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/ic_online"
+                android:backgroundTint="#2196F3" />
+
+        </RelativeLayout>
 
         <View
             android:id="@+id/stroke"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:background="@android:color/darker_gray" />
+            android:layout_marginTop="3dp"
+            android:background="@color/gray_spLite" />
+
     </LinearLayout>
 
 

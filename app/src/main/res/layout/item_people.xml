@@ -1,65 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="5dp"
-    android:orientation="vertical"
-    android:paddingTop="16dp">
+    android:orientation="horizontal"
+    android:paddingTop="8dp">
+
+
+    <FrameLayout
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginEnd="5dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:layout_gravity="start"
+            android:src="@drawable/default_avatar" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imgOnline"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="4dp"
+            android:src="@drawable/ic_online" />
+    </FrameLayout>
+
+
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp">
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/imgAvatar"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="#CCCCCC" />
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/imgOnline"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="3dp"
-                android:src="@drawable/ic_online" />
-
-        </FrameLayout>
-
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/txtName"
+        android:orientation="vertical">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:textColor="@android:color/background_dark"
-            android:textSize="20sp"
-            tools:text="Name" />
+            android:orientation="horizontal">
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:textColor="@android:color/background_dark"
+                android:textSize="18sp"
+                tools:text="Name" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginStart="10dp"
-            android:text="Kết bạn" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:paddingHorizontal="10dp"
+                android:text="Kết bạn"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_friend_request"
+                app:iconSize="20dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFriend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:paddingHorizontal="10dp"
+                android:text="Bạn bè"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                android:clickable="false"
+                android:backgroundTint="#DDDDDD"
+                android:textColor="@color/gray_dark"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_navigation_friend"
+                app:iconTint="@color/gray"
+                app:iconSize="22dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReceived"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:paddingHorizontal="10dp"
+                android:text="Đã gửi yêu cầu cho bạn"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                android:clickable="false"
+                android:backgroundTint="#DDDDDD"
+                android:textColor="@color/gray_dark"
+                app:cornerRadius="8dp"
+                />
+
+
+
+        </LinearLayout>
+        <View
+            android:id="@+id/stroke"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/gray_spLite" />
 
     </LinearLayout>
 
-    <View
-        android:id="@+id/stroke"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="5dp"
-        android:background="@android:color/darker_gray" />
 
 </LinearLayout>
+
+

@@ -1,9 +1,13 @@
 package com.ddrum.superchatvippro.view.activity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -19,9 +23,11 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.ddrum.superchatvippro.Adapter.ChatAdapter;
+import com.bumptech.glide.Glide;
 import com.ddrum.superchatvippro.R;
+import com.ddrum.superchatvippro.adapter.ChatAdapter;
 import com.ddrum.superchatvippro.constant.Constant;
+import com.ddrum.superchatvippro.library.Firebase;
 import com.ddrum.superchatvippro.library.TimeAgo;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,13 +40,22 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class ChatActivity extends AppCompatActivity {
 
+    //View
     private Toolbar toolbar;
     private RecyclerView rcvChatList;
     private AppCompatEditText edtInputMessage;
     private AppCompatButton btnSend;
+    private CircleImageView imgAvatar;
+    private AppCompatTextView tvUsername;
+    private AppCompatTextView tvOnline;
+    private AppCompatButton btnShowChooseImage;
+    private AppCompatButton btnChooseImage;
 
+    private String currentId;
     private String otherId;
     private MainViewModel viewModel;
 
@@ -49,38 +64,43 @@ public class ChatActivity extends AppCompatActivity {
     //Authentication
     private FirebaseAuth auth;
     private FirebaseUser user;
-    private String currentId;
+
 
     //Database
     private DatabaseReference reference;
-    private String preTime="0";
+    private String time = "0";
+
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
         initView();
         firebase();
         otherId = getIntent().getStringExtra("otherId");
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 //
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getListLastMessage(reference, otherId);
         viewModel.getAllUser(reference);
         viewModel.listUser.observe(this, new Observer<HashMap<String, Object>>() {
             @SuppressLint("ResourceType")
             @Override
             public void onChanged(HashMap<String, Object> hashMap) {
                 if (hashMap != null) {
-                    HashMap<String, Object> map = (HashMap<String, Object>) hashMap.get(otherId);
-                    toolbar.setTitle((String) map.get("username"));
-                    toolbar.setSubtitle(TimeAgo.getTimeAgo((String) map.get("online")));
+                    HashMap<String, String> map = (HashMap<String, String>) hashMap.get(otherId);
+                    tvUsername.setText(map.get("username"));
+                    tvOnline.setText(TimeAgo.getTimeAgo(map.get("online")));
+                    Glide.with(ChatActivity.this).load(map.get("photoUrl")).into(imgAvatar);
+                    setOnline();
 
                 }
             }
         });
 //
         Query query = reference.child(Constant.MESSAGE).child(currentId).child(otherId);
-        adapter = new ChatAdapter(currentId, query);
+        adapter = new ChatAdapter(this,rcvChatList, viewModel, currentId, query);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
 
         rcvChatList.setLayoutManager(linearLayoutManager);
@@ -90,21 +110,28 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
-                rcvChatList.smoothScrollToPosition(adapter.getItemCount());
+                rcvChatList.smoothScrollToPosition(adapter.getItemCount()-1);
             }
         });
-//
+
+        //Xét đã xem khi cuộn
+        rcvChatList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                Firebase.setSeenMessage(currentId,otherId);
+            }
+        });
+
+//Lấy time stamp message trước đó
         reference.child(Constant.LAST_MESSAGE).child(currentId).child(otherId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if ((HashMap<String, String>) snapshot.getValue() != null) {
                     HashMap<String, String> map = (HashMap<String, String>) snapshot.getValue();
-                    preTime = map.get("time");
-                } else {
-                    preTime = "0";
+                    time = map.get("time");
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
             }
@@ -114,37 +141,65 @@ public class ChatActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View v) {
-                String message = edtInputMessage.getText().toString();
+                String message = edtInputMessage.getText().toString().trim();
                 if (!TextUtils.isEmpty(message)) {
-                    HashMap<String, String> map = new HashMap<>();
-                    map.put("text", message);
-                    map.put("sender", currentId);
-                    map.put("type", "text");
-                    map.put("time", System.currentTimeMillis() + "");
-                    map.put("preTime", preTime == null ? "0" : preTime);
-
-                    reference.child(Constant.MESSAGE).child(currentId).child(otherId).push().setValue(map);
-                    reference.child(Constant.MESSAGE).child(otherId).child(currentId).push().setValue(map);
-
-                    map.put("receiver", otherId);
-                    map.put("seen", "true");
-                    reference.child(Constant.LAST_MESSAGE).child(currentId).child(otherId).setValue(map);
-                    map.put("receiver", currentId);
-                    map.put("seen", "false"); 
-                    reference.child(Constant.LAST_MESSAGE).child(otherId).child(currentId).setValue(map);
+                    Firebase.uploadTextMessage(currentId, otherId, message, time);
                     edtInputMessage.getText().clear();
                 }
             }
         });
+        edtInputMessage.addTextChangedListener(textWatcher);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
+                overridePendingTransition( R.anim.slide_from_left, R.anim.slide_to_right);
+
             }
         });
 
+
+        btnChooseImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(intent, 1);
+            }
+        });
+
+
     }
+
+//Method
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK && data.getData() != null) {
+            Uri uri = data.getData();
+            Firebase.uploadImageMessage(this, currentId, otherId, uri, time);
+        }
+    }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            boolean isEmpty = TextUtils.isEmpty(edtInputMessage.getText().toString());
+            btnSend.setEnabled(isEmpty ? false : true);
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+        }
+    };
+
 
     private void firebase() {
         auth = FirebaseAuth.getInstance();
@@ -158,34 +213,37 @@ public class ChatActivity extends AppCompatActivity {
         rcvChatList = findViewById(R.id.rcv_chat_list);
         edtInputMessage = findViewById(R.id.edt_input_message);
         btnSend = findViewById(R.id.btn_send);
-
+        imgAvatar = findViewById(R.id.imgAvatar);
+        tvUsername = findViewById(R.id.tv_username);
+        tvOnline = findViewById(R.id.tv_online);
+        btnShowChooseImage = findViewById(R.id.btn_show_choose_image);
+        btnChooseImage = findViewById(R.id.btn_choose_image);
     }
 
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void setOnline() {
         reference.child(Constant.USER)
                 .child(currentId)
                 .child("online")
                 .setValue("true");
-
-        reference.child(Constant.LAST_MESSAGE)
-                .child(currentId).child(otherId)
-                .child("seen")
-                .setValue("true");
-
-
+        Firebase.setSeenMessage(currentId,otherId);
     }
-//
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setOnline();
+    }
+
+
     @Override
     protected void onStop() {
         super.onStop();
         reference.child(Constant.USER)
                 .child(currentId)
                 .child("online")
-                .setValue(System.currentTimeMillis() +"");
+                .setValue(System.currentTimeMillis() + "");
+
     }
+
 }
 

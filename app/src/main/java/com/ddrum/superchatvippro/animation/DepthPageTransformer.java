@@ -1,4 +1,4 @@
-package com.ddrum.superchatvippro.Animation;
+package com.ddrum.superchatvippro.animation;
 import android.view.View;
 
 import androidx.annotation.RequiresApi;

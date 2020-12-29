@@ -19,9 +19,13 @@ import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.model.User;
 import com.ddrum.superchatvippro.view.activity.MainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -31,7 +35,7 @@ public class RegisterActivity extends AppCompatActivity {
     private AppCompatEditText edtEmail;
     private AppCompatEditText edtPassword;
     private AppCompatEditText edtPasswordConfirm;
-    private AppCompatButton btnRegister;
+    private MaterialButton btnRegister;
 
     //Authentication
     private FirebaseAuth auth;
@@ -97,7 +101,6 @@ public class RegisterActivity extends AppCompatActivity {
         String pass = edtPassword.getText().toString();
         String passConfirm = edtPasswordConfirm.getText().toString();
 
-
         if (!pass.equals(passConfirm)) {
             Toast.makeText(RegisterActivity.this, "Xác nhận mật khẩu không đúng", Toast.LENGTH_SHORT).show();
             edtPasswordConfirm.requestFocus();
@@ -109,18 +112,35 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
         }
-        auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    String userId = task.getResult().getUser().getUid();
-                    createUserAndLogin(userId, user, email, pass);
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
-                    edtEmail.requestFocus();
-                }
-            }
-        });
+        auth.fetchSignInMethodsForEmail(email)
+                .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+
+                        boolean check  = task.getResult().getSignInMethods().isEmpty();
+                        if(!check) {
+                            Toast.makeText(RegisterActivity.this, "Email đã tồn tại", Toast.LENGTH_SHORT).show();
+                            return;
+
+                        } else {
+                            auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        String userId = task.getResult().getUser().getUid();
+                                        FirebaseUser currentUser = auth.getCurrentUser();
+
+                                        createUserAndLogin(userId, user, email, pass);
+                                    } else {
+                                        Toast.makeText(RegisterActivity.this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
+                                        edtEmail.requestFocus();
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
     }
 
 
@@ -130,8 +150,8 @@ public class RegisterActivity extends AppCompatActivity {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(pass);
+        user.setPhotoUrl(Constant.DEFAULT_AVATAR);
         user.setOnline("true");
-
         //Add data User vào database
         reference.child(Constant.USER).child(userId).setValue(user) //Set Value chỉ đến đây thôi
                 //Dòng dưới này là để check xem api call có thành công hay không

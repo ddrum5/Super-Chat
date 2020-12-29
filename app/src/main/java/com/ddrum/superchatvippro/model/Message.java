@@ -7,6 +7,7 @@ public class Message {
     private String text;
     private String type;
     private String time;
+    private String preTime;
     private String seen;
 
     public String getSeen() {
@@ -18,14 +19,13 @@ public class Message {
     }
 
     public String getPreTime() {
-        return preTime; //???? e check hơn 3 p nó mói hiện thời gian
+        return preTime;
     }
 
     public void setPreTime(String preTime) {
         this.preTime = preTime;
     }
 
-    private String preTime;
 
 
     public String getTime() {
@@ -68,5 +68,10 @@ public class Message {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return sender + " " + seen;
     }
 }

@@ -16,19 +16,21 @@
         <activity android:name=".view.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".view.authentication.LoginActivity"
             android:windowSoftInputMode="adjustResize"/>
-
         <activity
             android:name=".view.authentication.RegisterActivity"
             android:windowSoftInputMode="adjustResize"/>
         <activity android:name=".view.activity.MainActivity"/>
         <activity android:name=".view.activity.ChatActivity"/>
+        <activity
+            android:theme="@style/Theme.InfoUser"
+            android:windowSoftInputMode="adjustResize"
+            android:name=".view.activity.InfoUserActivity"/>
 
     </application>
 

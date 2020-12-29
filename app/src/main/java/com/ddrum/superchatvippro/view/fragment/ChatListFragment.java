@@ -2,8 +2,6 @@ package com.ddrum.superchatvippro.view.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +15,11 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.ddrum.superchatvippro.Adapter.ChatListAdapter;
-import com.ddrum.superchatvippro.Adapter.OnlineAdapter;
+import com.ddrum.superchatvippro.adapter.ChatListAdapter;
+import com.ddrum.superchatvippro.adapter.OnlineAdapter;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
+import com.ddrum.superchatvippro.library.Firebase;
 import com.ddrum.superchatvippro.view.activity.ChatActivity;
 import com.ddrum.superchatvippro.view.activity.MainViewModel;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,7 +28,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
-public class ChatListFragment extends Fragment {
+public class
+
+ChatListFragment extends Fragment {
 
     private ChatListAdapter chatListAdapter;
     private OnlineAdapter onlineAdapter;
@@ -41,9 +42,7 @@ public class ChatListFragment extends Fragment {
 
     private AppCompatEditText edtSearch;
     private RecyclerView rcvChatList;
-    private LinearLayout btnCreateRoom;
     private RecyclerView rcvOnlineTop;
-    private View stroke;
 
 
     public static ChatListFragment newInstance() {
@@ -74,19 +73,12 @@ public class ChatListFragment extends Fragment {
         Query queryFriend = reference.child(Constant.FRIEND).child(currentUser.getUid());
         onlineAdapter = new OnlineAdapter(requireContext(), viewModel, queryFriend);
         rcvOnlineTop.setAdapter(onlineAdapter);
-        onlineAdapter.setCallback(new OnlineAdapter.Callback() {
-            @Override
-            public void onClick(String otherUserId) {
-                Intent intent = new Intent(requireContext(), ChatActivity.class);
-                intent.putExtra("otherId", otherUserId);
-                startActivity(intent);
-            }
-        });
+
 
 
 //Chat List
         Query queryMessage = reference.child(Constant.LAST_MESSAGE).child(currentUser.getUid());
-        chatListAdapter = new ChatListAdapter(viewModel, requireContext(), queryMessage);
+        chatListAdapter = new ChatListAdapter(requireContext(), currentUser.getUid(), viewModel, queryMessage);
         rcvChatList.setAdapter(chatListAdapter);
         rcvChatList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
@@ -110,22 +102,37 @@ public class ChatListFragment extends Fragment {
 //
 //            }
 //        });
+        itemClick();
 
-        clickItemChat();
     }
 
-
-
-    private void clickItemChat() {
-        chatListAdapter.setCallback(new ChatListAdapter.Callback() {
+    private void itemClick(){
+        onlineAdapter.setCallback(new OnlineAdapter.Callback() {
             @Override
-            public void onClick(int position, String otherUserId) {
+            public void onClick(String otherUserId) {
                 Intent intent = new Intent(requireContext(), ChatActivity.class);
                 intent.putExtra("otherId", otherUserId);
                 startActivity(intent);
+                requireActivity().overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
+            }
+        });
+        chatListAdapter.setCallback(new ChatListAdapter.Callback() {
+            @Override
+            public void onClick( String otherUserId) {
+                Intent intent = new Intent(requireContext(), ChatActivity.class);
+                intent.putExtra("otherId", otherUserId);
+                startActivity(intent);
+                requireActivity().overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
+
+            }
+
+            @Override
+            public void onLongClick(String otherUserId) {
+                Firebase.deleteChat(currentUser.getUid(), otherUserId);
             }
         });
     }
+
 
 
     private void initDatabase() {
@@ -136,10 +143,7 @@ public class ChatListFragment extends Fragment {
     private void initView(View view) {
         edtSearch = view.findViewById(R.id.edtSearch);
         rcvChatList = view.findViewById(R.id.rcv_chat_list);
-        edtSearch = view.findViewById(R.id.edtSearch);
-        btnCreateRoom = view.findViewById(R.id.btn_create_room);
         rcvOnlineTop = view.findViewById(R.id.rcv_online_top);
-        stroke = view.findViewById(R.id.stroke);
     }
 
 

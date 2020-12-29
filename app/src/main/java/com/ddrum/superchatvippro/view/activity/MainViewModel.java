@@ -18,7 +18,9 @@ public class MainViewModel extends ViewModel {
     public MutableLiveData<User> currentUser = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listUser = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listSender = new MutableLiveData<>();
+    public MutableLiveData<HashMap<String, Object>> listReceiver = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listFriends = new MutableLiveData<>();
+    public MutableLiveData<HashMap<String, Object>> listLastMessage = new MutableLiveData<>();
 
 
     public void getUser(DatabaseReference reference, String userId) {
@@ -31,11 +33,8 @@ public class MainViewModel extends ViewModel {
                         User user = snapshot.getValue(User.class);
                         currentUser.setValue(user); //Chính nó
                     }
-
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
+                    public void onCancelled(@NonNull DatabaseError error) { }
                 });
 
     }
@@ -70,6 +69,21 @@ public class MainViewModel extends ViewModel {
         });
     }
 
+    public void getListReceiver(DatabaseReference reference, String userId) {
+        reference.child(Constant.RECEIVER).child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                HashMap<String, Object> map = (HashMap<String, Object>) snapshot.getValue();
+                listReceiver.setValue(map);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     public void getListFriend(DatabaseReference reference, String userId) {
         reference.child(Constant.FRIEND).child(userId).addValueEventListener(new ValueEventListener() {
             @Override
@@ -81,6 +95,18 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
             }
+        });
+    }
+
+    public void getListLastMessage(DatabaseReference reference, String userId) {
+        reference.child(Constant.LAST_MESSAGE).child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                HashMap<String, Object> map = (HashMap<String, Object>) snapshot.getValue();
+                listLastMessage.setValue(map);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { }
         });
     }
 
