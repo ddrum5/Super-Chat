@@ -54,7 +54,8 @@ public class FriendAdapter extends FirebaseRecyclerAdapter<User, FriendAdapter.V
         viewHolder.btnUnFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (callback != null) callback.onClickUnFriend(position, user.getId());
+                if (callback != null)
+                    callback.onClickUnFriend(position, user.getId());
             }
         });
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
