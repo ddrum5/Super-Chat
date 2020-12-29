@@ -1,28 +1,19 @@
 package com.ddrum.superchatvippro.view.activity;
 
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.Gravity;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import android.view.View;
+
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
@@ -37,8 +28,6 @@ import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.library.Firebase;
 import com.ddrum.superchatvippro.model.User;
 import com.ddrum.superchatvippro.view.authentication.LoginActivity;
-import com.ddrum.superchatvippro.view.fragment.BlankFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -67,8 +56,6 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private AHBottomNavigation bottomNavigation;
     private CircleImageView imgAvatar;
-
-    private BlankFragment blankFragment= new BlankFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
