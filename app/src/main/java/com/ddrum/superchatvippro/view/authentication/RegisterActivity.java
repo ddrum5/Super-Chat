@@ -25,9 +25,11 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -96,7 +98,7 @@ public class RegisterActivity extends AppCompatActivity {
 
 
     private void registerClick() {
-        String user = edtUsername.getText().toString().trim();
+        String username = edtUsername.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
         String pass = edtPassword.getText().toString();
         String passConfirm = edtPasswordConfirm.getText().toString();
@@ -116,10 +118,9 @@ public class RegisterActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
                     @Override
                     public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
-
                         boolean check  = task.getResult().getSignInMethods().isEmpty();
                         if(!check) {
-                            Toast.makeText(RegisterActivity.this, "Email đã tồn tại", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RegisterActivity.this, "Email đã tồn tại", Toast.LENGTH_LONG).show();
                             return;
 
                         } else {
@@ -128,9 +129,14 @@ public class RegisterActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
                                         String userId = task.getResult().getUser().getUid();
-                                        FirebaseUser currentUser = auth.getCurrentUser();
-
-                                        createUserAndLogin(userId, user, email, pass);
+                                        task.getResult().getUser().getIdToken(true)
+                                                .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<GetTokenResult> task) {
+                                                        String token = task.getResult().getToken();
+                                                        createUserAndLogin(userId, username, email, pass, token);
+                                                    }
+                                                });
                                     } else {
                                         Toast.makeText(RegisterActivity.this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
                                         edtEmail.requestFocus();
@@ -144,7 +150,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
 
-    private void createUserAndLogin(String userId, String username, String email, String pass) {
+    private void createUserAndLogin(String userId, String username, String email, String pass, String token) {
         User user = new User();
         user.setId(userId);
         user.setUsername(username);
@@ -152,6 +158,7 @@ public class RegisterActivity extends AppCompatActivity {
         user.setPassword(pass);
         user.setPhotoUrl(Constant.DEFAULT_AVATAR);
         user.setOnline("true");
+        user.setToken(token);
         //Add data User vào database
         reference.child(Constant.USER).child(userId).setValue(user) //Set Value chỉ đến đây thôi
                 //Dòng dưới này là để check xem api call có thành công hay không
@@ -163,6 +170,7 @@ public class RegisterActivity extends AppCompatActivity {
                             Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
+                            overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
                         } else {
                             Toast.makeText(RegisterActivity.this, "Something error!!!", Toast.LENGTH_SHORT).show();
                         }

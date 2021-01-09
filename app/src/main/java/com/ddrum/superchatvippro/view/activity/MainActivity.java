@@ -1,19 +1,30 @@
 package com.ddrum.superchatvippro.view.activity;
 
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.view.View;
 
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.view.ViewCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
@@ -26,13 +37,19 @@ import com.ddrum.superchatvippro.animation.DepthPageTransformer;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.library.Firebase;
+import com.ddrum.superchatvippro.model.Message;
 import com.ddrum.superchatvippro.model.User;
 import com.ddrum.superchatvippro.view.authentication.LoginActivity;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -44,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
     private String currentId;
-    private User mUser;
 
     //Database
     private DatabaseReference reference;
@@ -56,49 +72,36 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private AHBottomNavigation bottomNavigation;
     private CircleImageView imgAvatar;
+
+    //
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
-        //
         initView();
         firebase();
+
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-        viewModel.getUser(reference, currentId); //Ở đây chú setValue của currentUser từ main,
-        viewModel.getAllUser(reference);
-        viewModel.getListSender(reference, currentId);
-        viewModel.getListReceiver(reference, currentId);
-        viewModel.getListFriend(reference, currentId);
-        // nên tất cả các Fragment kia muốn lấy thằng currentUser hì đều phải requireActivity() tức là MainActivity (Vì các Fragment khác đều là con của MainActivity)
+        viewModelGetData();
 
-
-        mUser = new User();
         //Set User name & Avatar
-        viewModel.currentUser.observe(this, new Observer<User>() {
+        viewModel.user.observe(this, new Observer<User>() {
             @Override
             public void onChanged(User user) {
-                mUser.setUsername(user.getUsername());
-                mUser.setEmail(user.getEmail());
-                if (user.getUsername() == null) {
-                    User nUser = new User();
-                    nUser.setId(currentId);
-                    nUser.setUsername(currentUser.getDisplayName());
-                    nUser.setEmail(currentUser.getEmail());
-                    nUser.setOnline("true");
-                    nUser.setPhotoUrl(currentUser.getPhotoUrl() + "");
-                    nUser.setPassword("");
-                    reference.child(Constant.USER).child(currentId).setValue(nUser);
-                }
-                txtName.setText(user.getUsername());
-                Glide.with(MainActivity.this).load(user.getPhotoUrl()).into(imgAvatar);
-
+                    txtName.setText(user.getUsername());
+                    Glide.with(MainActivity.this).load(user.getPhotoUrl()).into(imgAvatar);
             }
         });
 
 
-        //Bottm Navigation
+        //Bottom Navigation
         navigation();
+
+        //Info User
+        avatarClick();
+
         //Log out
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,42 +110,87 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        imgAvatar.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent();
-//                intent.setType("image/*");
-//                intent.setAction(Intent.ACTION_GET_CONTENT);
-//                startActivityForResult(intent.createChooser(intent, "Chọn một ảnh"), 1);
-//            }
-//        });
-        avatarClick();
+
+        reference.child(Constant.LAST_MESSAGE).child(currentId).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                HashMap<String, String> map = (HashMap<String, String>) snapshot.getValue();
+                showNotification("HAY", map.get("text"));
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
     }
+
 
     //Method
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri uri = data.getData();
-            imgAvatar.setImageURI(uri);
-            Firebase.setPhotoUrlForUser(this,currentId, uri);
+    private void showNotification(String title, String body) {
+        String channelId = "hay";
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_background))
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setAutoCancel(true)
+                        .setSound(defaultSoundUri)
+                        .setDefaults(Notification.DEFAULT_ALL)
+                        .setPriority(NotificationManager.IMPORTANCE_HIGH);
+
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Since android Oreo notification channel is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "Channel human readable title",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+
+            notificationManager.createNotificationChannel(channel);
         }
+
+        notificationManager.notify(0, notificationBuilder.build());
     }
+
+
+
+
 
     private void avatarClick() {
         imgAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, InfoUserActivity.class);
-                startActivity(intent);
-                overridePendingTransition( R.anim.zoom_in, R.anim.static_animation);
+                ActivityOptionsCompat option = ActivityOptionsCompat
+                        .makeSceneTransitionAnimation(MainActivity.this, imgAvatar, ViewCompat.getTransitionName(imgAvatar));
+                startActivity(intent, option.toBundle());
             }
         });
     }
 
-    //Method
+
     private void navigation() {
         viewPager.setAdapter(new ViewPagerAdapter(this));
         viewPager.setPageTransformer(new DepthPageTransformer());
@@ -199,15 +247,42 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-//            @Override
-//            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//                return  true;
-//            }
-//        });
 
+        viewModel.listReceiver.observe(this, new Observer<HashMap<String, Object>>() {
+            @Override
+            public void onChanged(HashMap<String, Object> hashMap) {
+                int count;
+                if (hashMap != null) {
+                    count = hashMap.size();
+                    bottomNavigation.setNotification(count + " yêu cầu", 1);
+                } else {
+                    bottomNavigation.setNotification("", 1);
+                }
+            }
+        });
+
+        viewModel.listLastMessage.observe(this, new Observer<HashMap<String, Object>>() {
+            @Override
+            public void onChanged(HashMap<String, Object> hashMap) {
+                int count = 0;
+                if (hashMap != null) {
+                    for (String key : hashMap.keySet()) {
+                        HashMap<String, String> map = (HashMap<String, String>) hashMap.get(key);
+                        if (map.get("seen").equals("false")) {
+                            count++;
+                        }
+                    }
+                    if(count > 0 ){
+                        bottomNavigation.setNotification(count+"", 0);
+                    } else {
+                        bottomNavigation.setNotification("", 0);
+                    }
+                } else {
+                    bottomNavigation.setNotification("", 0);
+                }
+            }
+        });
     }
-
 
     private void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -226,15 +301,13 @@ public class MainActivity extends AppCompatActivity {
                 auth.signOut();
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
                 finish();
             }
         });
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-
-
-
 
     private void firebase() {
         auth = FirebaseAuth.getInstance();
@@ -243,6 +316,14 @@ public class MainActivity extends AppCompatActivity {
         reference = FirebaseDatabase.getInstance().getReference(); //Trỏ tới database
     }
 
+    private void viewModelGetData() {
+        viewModel.getUser(reference, currentId);
+        viewModel.getAllUser(reference);
+        viewModel.getListSender(reference, currentId);
+        viewModel.getListReceiver(reference, currentId);
+        viewModel.getListFriend(reference, currentId);
+        viewModel.getListLastMessage(reference, currentId);
+    }
 
     private void initView() {
         txtName = findViewById(R.id.txtName);
@@ -255,20 +336,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        Firebase.setOnlineStatus("true");
         super.onResume();
-        reference.child(Constant.USER)
-                .child(currentId) //Trỏ tới UserId đang đăng nhập (3idbF74gbNZ0TU6anbBfX6UiguQ2)
-                .child("online")//Trỏ tiếp tới "online"
-                .setValue("true"); //Set cho "online" giá trị true, tức là đang online
+
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
         reference.child(Constant.USER)
                 .child(currentId)
                 .child("online")
-                .setValue(System.currentTimeMillis() + "");
+                .setValue(System.currentTimeMillis()+"");
+        super.onPause();
     }
 
 }

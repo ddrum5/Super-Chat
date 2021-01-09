@@ -68,6 +68,7 @@ public class RequestAdapter extends FirebaseRecyclerAdapter<String, RequestAdapt
 
     }
 
+
     public interface Callback {
         void onClickAccept(int position, String otherUserName, String otherUserId);
 

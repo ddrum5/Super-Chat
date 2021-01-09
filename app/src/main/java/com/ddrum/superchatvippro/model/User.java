@@ -14,6 +14,15 @@ public class User {
     private String password;
     private String online;
     private String photoUrl;
+    private String token;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public User(String id, String username, String email, String password, String photoUrl, String online) {
         this.id = id;
@@ -75,12 +84,12 @@ public class User {
         this.online = online;
     }
 
-    public static String getUserNameByID(DatabaseReference reference, String id){
+    public static String getUserNameByID(DatabaseReference reference, String id) {
         final String[] userName = {""};
         reference.child(id).child("username").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                 userName[0] = snapshot.getValue(String.class);
+                userName[0] = snapshot.getValue(String.class);
             }
 
             @Override

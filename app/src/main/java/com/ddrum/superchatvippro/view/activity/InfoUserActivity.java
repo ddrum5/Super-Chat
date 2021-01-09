@@ -1,20 +1,25 @@
 package com.ddrum.superchatvippro.view.activity;
 
-import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -22,6 +27,8 @@ import com.bumptech.glide.Glide;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.library.DialogConfirm;
+import com.ddrum.superchatvippro.library.Firebase;
+import com.ddrum.superchatvippro.library.Uti;
 import com.ddrum.superchatvippro.model.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -37,16 +44,15 @@ public class InfoUserActivity extends AppCompatActivity {
     private AppCompatEditText edtEditUserName;
     private AppCompatTextView tvUserName;
     private AppCompatTextView tvEmail;
-    private MaterialButton btnChange;
     private AppCompatButton btnBack;
+    private AppCompatButton btnSave;
+    private Toolbar toolbar;
     LinearLayout linearLayout;
 
     private MainViewModel viewModel;
 
     private DatabaseReference reference;
     private FirebaseUser currentUer;
-    private AppCompatButton btnDone;
-
 
 
     @Override
@@ -55,13 +61,14 @@ public class InfoUserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_info_user);
         initView();
 
+
         reference = FirebaseDatabase.getInstance().getReference();
         currentUer = FirebaseAuth.getInstance().getCurrentUser();
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getUser(reference, currentUer.getUid());
 
-        viewModel.currentUser.observe(this, new Observer<User>() {
+        viewModel.user.observe(this, new Observer<User>() {
             @Override
             public void onChanged(User user) {
                 tvUserName.setText(user.getUsername());
@@ -70,37 +77,85 @@ public class InfoUserActivity extends AppCompatActivity {
             }
         });
 
-        btnChange.setOnClickListener(new View.OnClickListener() {
+        imgAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                changUserName();
+                avatarClick();
             }
         });
 
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(InfoUserActivity.this, MainActivity.class);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
                 finish();
-
             }
         });
-
-
-
-
-
-
-
     }
 
-    private void changUserName() {
-        btnChange.setVisibility(View.GONE);
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    //Method
+    private void avatarClick() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent.createChooser(intent, "Chọn một ảnh"), 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri uri = data.getData();
+            DialogConfirm dialogConfirm = new DialogConfirm(InfoUserActivity.this);
+            dialogConfirm.openSimpleDialog("Bạn có muốn thay ảnh không?");
+            dialogConfirm.setCallback(new DialogConfirm.Callback() {
+                @Override
+                public void onClick() {
+                    imgAvatar.setImageURI(uri);
+                    Firebase.changeAvatar(linearLayout, currentUer.getUid(), uri);
+                }
+            });
+
+        }
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_info_user, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_change_user_name:
+                changeUserNameClick();
+                return true;
+            case R.id.menu_change_password:
+                break;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void changeUserNameClick() {
         tvUserName.setVisibility(View.GONE);
-        btnDone.setVisibility(View.VISIBLE);
+        tvEmail.setVisibility(View.GONE);
         edtEditUserName.setVisibility(View.VISIBLE);
+        btnSave.setVisibility(View.VISIBLE);
         edtEditUserName.setText(tvUserName.getText());
         edtEditUserName.requestFocus();
-        showKeyboard();
+        Uti.showKeyboard(this);
 
         edtEditUserName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -110,79 +165,47 @@ public class InfoUserActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String text = edtEditUserName.getText().toString().trim();
-                btnDone.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
+                btnSave.setEnabled(!TextUtils.isEmpty(text));
             }
-
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) { }
         });
-        btnDone.setOnClickListener(new View.OnClickListener() {
+        btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String newName = edtEditUserName.getText().toString().trim();
 
                 if (newName.equals(tvUserName.getText())) {
                     updateUI();
+                    Uti.hideKeyboard(InfoUserActivity.this);
                 } else if (newName.length() > 20) {
                     edtEditUserName.setError("Tên bạn quá dài");
-                    ;
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(InfoUserActivity.this);
-                    builder.setMessage("Bạn có muốn đổi tên tên không?");
-                    builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
+                    DialogConfirm dialog = new DialogConfirm(InfoUserActivity.this);
+                    dialog.openSimpleDialog("Bạn có chắc chắn muốn đổi tên?");
+                    dialog.setCallback(new DialogConfirm.Callback() {
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            setName(newName);
-                            closeKeyboard();
+                        public void onClick() {
+                            changeName(newName);
+                            Uti.hideKeyboard(InfoUserActivity.this);
                             updateUI();
-                            Snackbar.make(linearLayout, "Đã đổi tên", Snackbar.LENGTH_SHORT).show();
-                            dialog.dismiss();
+                            Snackbar.make(linearLayout, "Đã đổi tên", Snackbar.LENGTH_LONG).show();
                         }
                     });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-
 
                 }
             }
         });
     }
 
-    private void hideSoftKeybroad() {
-        View view = InfoUserActivity.this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager manager
-                    = (InputMethodManager)
-                    getSystemService(InfoUserActivity.this.INPUT_METHOD_SERVICE);
-            manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-
-    }
-    public void showKeyboard(){
-        InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(this.INPUT_METHOD_SERVICE);
-        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-    }
-
-    public void closeKeyboard(){
-        InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(this.INPUT_METHOD_SERVICE);
-        inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-    }
-
     private void updateUI() {
-        btnDone.setVisibility(View.GONE);
+        btnSave.setVisibility(View.GONE);
         edtEditUserName.setVisibility(View.GONE);
         tvUserName.setVisibility(View.VISIBLE);
-        btnChange.setVisibility(View.VISIBLE);
+        tvEmail.setVisibility(View.VISIBLE);
     }
 
-    private void setName(String newName) {
+    private void changeName(String newName) {
         reference.child(Constant.USER)
                 .child(currentUer.getUid())
                 .child("username")
@@ -194,10 +217,25 @@ public class InfoUserActivity extends AppCompatActivity {
         imgAvatar = findViewById(R.id.imgAvatar);
         edtEditUserName = findViewById(R.id.edtEditUserName);
         tvUserName = findViewById(R.id.tvUserName);
-        tvEmail = findViewById(R.id.tvEmail);
-        btnChange = findViewById(R.id.btn_change);
-        btnDone = findViewById(R.id.btnDone);
+        tvEmail = findViewById(R.id.tvEmailInfo);
+        btnSave = findViewById(R.id.btnSave);
         linearLayout = findViewById(R.id.activity_info_user);
         btnBack = findViewById(R.id.btnBack);
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("");
+    }
+
+    @Override
+    protected void onResume() {
+        Firebase.setOnlineStatus("true");
+        super.onResume();
+
+    }
+
+    @Override
+    protected void onPause() {
+        Firebase.setOnlineStatus(System.currentTimeMillis() + "");
+        super.onPause();
     }
 }

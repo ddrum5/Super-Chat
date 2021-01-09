@@ -10,69 +10,83 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:layout_marginTop="10dp"
         android:text="20:05, 6 thg 10"
         android:textColor="#B1B1B1"
         android:textSize="13sp"
         android:visibility="visible" />
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tv_send_message_left"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/drawable_message_left"
-                android:maxWidth="300dp"
-                android:layout_marginTop="10dp"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="5dp"
-                android:text="@string/app_name"
-                android:textSize="20sp"
-                android:visibility="gone" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tv_send_message_right"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:background="@drawable/drawable_message_right"
-                android:maxWidth="300dp"
-                android:layout_marginTop="10dp"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="5dp"
-                android:text="@string/app_name"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:visibility="visible" />
-        </FrameLayout>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_send_message_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/drawable_message_left"
+            android:maxWidth="300dp"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="5dp"
+            android:text="@string/app_name"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_send_message_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/drawable_message_right"
+            android:maxWidth="300dp"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="5dp"
+            android:text="@string/app_name"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:visibility="visible" />
+    </FrameLayout>
+
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/img_send_image_left"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <com.google.android.material.card.MaterialCardView
             android:layout_marginTop="10dp"
-            android:adjustViewBounds="true"
-            android:maxWidth="300dp"
-            android:maxHeight="400dp"
-            android:visibility="gone" />
-
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/img_send_image_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:cardCornerRadius="20dp">
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_send_image_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/item_test"
+                android:adjustViewBounds="true"
+                android:maxWidth="300dp"
+                android:maxHeight="400dp"
+                android:visibility="visible" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_marginTop="10dp"
             android:layout_gravity="end"
-            android:layout_marginTop="10dp"
-            android:adjustViewBounds="true"
-            android:maxWidth="300dp"
-            android:maxHeight="400dp"
-            android:visibility="gone" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="20dp">
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_send_image_right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:maxWidth="300dp"
+                android:maxHeight="400dp"
+                android:src="@drawable/item_test"
+                android:visibility="visible" />
+        </com.google.android.material.card.MaterialCardView>
+
     </FrameLayout>
 
     <androidx.appcompat.widget.AppCompatTextView

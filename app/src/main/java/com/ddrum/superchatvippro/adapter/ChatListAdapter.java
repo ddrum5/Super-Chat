@@ -3,6 +3,7 @@ package com.ddrum.superchatvippro.adapter;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatTextView;
@@ -10,6 +11,8 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.chauthai.swipereveallayout.SwipeRevealLayout;
+import com.chauthai.swipereveallayout.ViewBinderHelper;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.library.TimeAgo;
 import com.ddrum.superchatvippro.model.Message;
@@ -29,6 +32,7 @@ public class ChatListAdapter extends FirebaseRecyclerAdapter<Message, ChatListAd
     private Callback callback;
     private String currentId;
 
+    private ViewBinderHelper viewBinderHelper = new ViewBinderHelper();
     public void setCallback(Callback callback) {
         this.callback = callback;
     }
@@ -90,19 +94,22 @@ public class ChatListAdapter extends FirebaseRecyclerAdapter<Message, ChatListAd
             }
         });
 
-        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+        viewHolder.itemMainContent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 callback.onClick(message.getReceiver());
             }
         });
-        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+
+        viewBinderHelper.bind(viewHolder.swipeRevealLayout, message.getReceiver());
+
+        viewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
-                callback.onLongClick(message.getReceiver());
-                return true;
+            public void onClick(View v) {
+                callback.onDeleteClick(message.getReceiver());
             }
         });
+
 
 
     }
@@ -110,14 +117,15 @@ public class ChatListAdapter extends FirebaseRecyclerAdapter<Message, ChatListAd
 
     public interface Callback {
         void onClick(String otherUserId);
-        void onLongClick(String otherUserId);
+        void onDeleteClick(String otherUserId);
     }
 
     public static class viewHolder extends RecyclerView.ViewHolder {
         CircleImageView imgAvatar, imgOnline;
-        AppCompatTextView txtName, txtLastMessage, txtLastTime;
+        AppCompatTextView txtName, txtLastMessage, txtLastTime, btnDelete;
         View stroke, dotSeen;
-
+        SwipeRevealLayout swipeRevealLayout;
+        LinearLayout itemMainContent;
 
         public viewHolder(@NonNull View itemView) {
             super(itemView);
@@ -128,7 +136,11 @@ public class ChatListAdapter extends FirebaseRecyclerAdapter<Message, ChatListAd
             stroke = itemView.findViewById(R.id.stroke);
             dotSeen = itemView.findViewById(R.id.dotSeen);
             txtLastTime = itemView.findViewById(R.id.txtLastTime);
+            swipeRevealLayout = itemView.findViewById(R.id.swipeRevealLayout);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
+            itemMainContent = itemView.findViewById(R.id.item_main_content);
 
         }
     }
+
 }

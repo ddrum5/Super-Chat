@@ -63,7 +63,7 @@ public class PeopleFragment extends Fragment {
         intDatabase(view);
 
         Query query = reference.child(Constant.USER);
-        adapter = new PeopleAdapter(requireActivity(), viewModel, query);
+        adapter = new PeopleAdapter(requireContext(), viewModel, query);
         rcvSearch.setAdapter(adapter);
         rcvSearch.setLayoutManager(new LinearLayoutManager(requireContext()));
 
@@ -83,11 +83,8 @@ public class PeopleFragment extends Fragment {
             public void afterTextChanged(Editable s) {
             }
         });
-
         addFriendClick();
-
     }
-
 
     private void addFriendClick(){
         adapter.setOnAddFriendClick(new PeopleAdapter.Callback() {

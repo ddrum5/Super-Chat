@@ -110,6 +110,7 @@
             android:layout_height="wrap_content"
             android:padding="15dp"
             android:enabled="false"
+            android:textAllCaps="false"
             android:text="Tạo tài khoản"
             android:textSize="15sp" />
 

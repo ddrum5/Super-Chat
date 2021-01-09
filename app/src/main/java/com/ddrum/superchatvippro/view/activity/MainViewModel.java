@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 public class MainViewModel extends ViewModel {
 
-    public MutableLiveData<User> currentUser = new MutableLiveData<>();
+    public MutableLiveData<User> user = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listUser = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listSender = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listReceiver = new MutableLiveData<>();
@@ -24,14 +24,12 @@ public class MainViewModel extends ViewModel {
 
 
     public void getUser(DatabaseReference reference, String userId) {
-        //Trỏ tới User > Uid (User Id của chính mình đang đăng nhập)
         reference.child(Constant.USER).child(userId)
-                .addValueEventListener(new ValueEventListener() {//Lắng nghe khi có dữ liệu thay đổi
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        //Mỗi khi có Data thay đổi thì nó lại chạy vào hàm này
-                        User user = snapshot.getValue(User.class);
-                        currentUser.setValue(user); //Chính nó
+                        User user =  snapshot.getValue(User.class);
+                        MainViewModel.this.user.setValue(user); //Chính nó
                     }
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) { }

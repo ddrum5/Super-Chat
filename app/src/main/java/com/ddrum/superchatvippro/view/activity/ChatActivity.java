@@ -1,6 +1,5 @@
 package com.ddrum.superchatvippro.view.activity;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -8,7 +7,9 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,6 +30,8 @@ import com.ddrum.superchatvippro.adapter.ChatAdapter;
 import com.ddrum.superchatvippro.constant.Constant;
 import com.ddrum.superchatvippro.library.Firebase;
 import com.ddrum.superchatvippro.library.TimeAgo;
+import com.ddrum.superchatvippro.library.Uti;
+import com.ddrum.superchatvippro.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -52,11 +55,9 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView imgAvatar;
     private AppCompatTextView tvUsername;
     private AppCompatTextView tvOnline;
-    private AppCompatButton btnShowChooseImage;
     private AppCompatButton btnChooseImage;
 
-    private String currentId;
-    private String otherId;
+    private String currentId, otherId, otherName, currentName;
     private MainViewModel viewModel;
 
     private ChatAdapter adapter;
@@ -71,36 +72,32 @@ public class ChatActivity extends AppCompatActivity {
     private String time = "0";
 
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        otherId = getIntent().getStringExtra("otherId");
         initView();
         firebase();
-        otherId = getIntent().getStringExtra("otherId");
+
 //
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getListLastMessage(reference, otherId);
-        viewModel.getAllUser(reference);
-        viewModel.listUser.observe(this, new Observer<HashMap<String, Object>>() {
-            @SuppressLint("ResourceType")
+        viewModel.getUser(reference, otherId);
+        viewModel.user.observe(this, new Observer<User>() {
             @Override
-            public void onChanged(HashMap<String, Object> hashMap) {
-                if (hashMap != null) {
-                    HashMap<String, String> map = (HashMap<String, String>) hashMap.get(otherId);
-                    tvUsername.setText(map.get("username"));
-                    tvOnline.setText(TimeAgo.getTimeAgo(map.get("online")));
-                    Glide.with(ChatActivity.this).load(map.get("photoUrl")).into(imgAvatar);
-                    setOnline();
-
-                }
+            public void onChanged(User user) {
+                tvUsername.setText(user.getUsername());
+                tvOnline.setText(TimeAgo.getTimeAgo(user.getOnline()));
+                Glide.with(ChatActivity.this).load(user.getPhotoUrl()).into(imgAvatar);
+                otherName = user.getUsername();
             }
         });
+
 //
         Query query = reference.child(Constant.MESSAGE).child(currentId).child(otherId);
-        adapter = new ChatAdapter(this,rcvChatList, viewModel, currentId, query);
+        adapter = new ChatAdapter(this, viewModel, currentId, query);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
 
         rcvChatList.setLayoutManager(linearLayoutManager);
@@ -110,7 +107,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
-                rcvChatList.smoothScrollToPosition(adapter.getItemCount()-1);
+                rcvChatList.smoothScrollToPosition(adapter.getItemCount() - 1);
             }
         });
 
@@ -119,7 +116,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                Firebase.setSeenMessage(currentId,otherId);
+                Firebase.setSeenMessage(currentId, otherId);
             }
         });
 
@@ -132,33 +129,35 @@ public class ChatActivity extends AppCompatActivity {
                     time = map.get("time");
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
-
+//Send Message
         btnSend.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View v) {
                 String message = edtInputMessage.getText().toString().trim();
                 if (!TextUtils.isEmpty(message)) {
-                    Firebase.uploadTextMessage(currentId, otherId, message, time);
+                    Firebase.uploadTextMessage(currentName, otherName, currentId, otherId, message, time);
                     edtInputMessage.getText().clear();
+
                 }
             }
         });
+
         edtInputMessage.addTextChangedListener(textWatcher);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Uti.hideKeyboard(ChatActivity.this);
+                overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
                 finish();
-                overridePendingTransition( R.anim.slide_from_left, R.anim.slide_to_right);
-
             }
         });
-
 
         btnChooseImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,6 +173,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 //Method
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -205,7 +205,18 @@ public class ChatActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
         currentId = user.getUid();
-        reference = FirebaseDatabase.getInstance().getReference(); //Trỏ tới database
+        reference = FirebaseDatabase.getInstance().getReference();
+        reference.child(Constant.USER)
+                .child(currentId)
+                .child("username")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        currentName = snapshot.getValue().toString();
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) { }
+                });
     }
 
     private void initView() {
@@ -216,33 +227,28 @@ public class ChatActivity extends AppCompatActivity {
         imgAvatar = findViewById(R.id.imgAvatar);
         tvUsername = findViewById(R.id.tv_username);
         tvOnline = findViewById(R.id.tv_online);
-        btnShowChooseImage = findViewById(R.id.btn_show_choose_image);
         btnChooseImage = findViewById(R.id.btn_choose_image);
     }
 
-    private void setOnline() {
-        reference.child(Constant.USER)
-                .child(currentId)
-                .child("online")
-                .setValue("true");
-        Firebase.setSeenMessage(currentId,otherId);
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
     }
 
     @Override
     protected void onResume() {
+        Firebase.setOnlineStatus("true");
+        Firebase.setSeenMessage(currentId, otherId);
         super.onResume();
-        setOnline();
+
     }
 
-
     @Override
-    protected void onStop() {
-        super.onStop();
-        reference.child(Constant.USER)
-                .child(currentId)
-                .child("online")
-                .setValue(System.currentTimeMillis() + "");
-
+    protected void onPause() {
+        Firebase.setOnlineStatus(System.currentTimeMillis() + "");
+        super.onPause();
     }
 
 }

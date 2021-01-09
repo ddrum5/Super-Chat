@@ -27,7 +27,6 @@ public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.V
     private Callback callback;
     private MainViewModel mainViewModel;
     private Context context;
-    private String currentId;
 
     public void setOnAddFriendClick(Callback callback) {
         this.callback = callback;
@@ -44,18 +43,18 @@ public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.V
         viewHolder.imgOnline.setVisibility(View.GONE);
 
         Glide.with(context).load(user.getPhotoUrl()).into(viewHolder.imgAvatar);
-        mainViewModel.currentUser.observe((MainActivity) context, new Observer<User>() {
+        mainViewModel.user.observe((MainActivity) context, new Observer<User>() {
             @Override
             public void onChanged(User currentUser) {
                 String name = "";
-                if (currentUser.getId().equals(user.getId())) {
-                    currentId = currentUser.getId();
-                    viewHolder.btnAdd.setVisibility(View.INVISIBLE);
-                    name = user.getUsername() + " (Bạn)";
-                } else {
-                    viewHolder.btnAdd.setVisibility(View.VISIBLE);
-                    name = user.getUsername();
-                }
+                if (currentUser.getId() != null)
+                    if (currentUser.getId().equals(user.getId())) {
+                        viewHolder.btnAdd.setVisibility(View.INVISIBLE);
+                        name = user.getUsername() + " (Bạn)";
+                    } else {
+                        viewHolder.btnAdd.setVisibility(View.VISIBLE);
+                        name = user.getUsername();
+                    }
                 viewHolder.txtName.setText(name);
             }
         });
@@ -68,26 +67,21 @@ public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.V
         });
 
 
-//        mainViewModel.listReceiver.observe((MainActivity) context, new Observer<HashMap<String, Object>>() {
-//            @Override
-//            public void onChanged(HashMap<String, Object> hashMap) {
-//                if (hashMap != null && hashMap.get(user.getId()) != null) {
-//                    showReceived(viewHolder);
-//                }
-//            }
-//        });
-
-
         mainViewModel.listFriends.observe((MainActivity) context, new Observer<HashMap<String, Object>>() {
             @Override
             public void onChanged(HashMap<String, Object> hashMap) {
                 if (hashMap != null && hashMap.get(user.getId()) != null) {
                     HashMap<String, Object> map = (HashMap<String, Object>) hashMap.get(user.getId());
-                    showFriend(viewHolder);
                     viewHolder.imgOnline.setVisibility(user.getOnline().equals("true") ? View.VISIBLE : View.INVISIBLE);
+                    viewHolder.btnAdd.setEnabled(false);
+                        viewHolder.btnAdd.setText("Bạn bè");
+                    viewHolder.btnAdd.setIconResource(R.drawable.ic_navigation_friend);
+                    viewHolder.btnAdd.setBackgroundColor(context.getColor(R.color.gray_spLite));
+                    viewHolder.btnAdd.setTextColor(context.getColor(R.color.gray_dark));
+                    viewHolder.btnAdd.setIconTint(context.getColorStateList(R.color.gray_dark));
                 } else {
                     viewHolder.imgOnline.setVisibility(View.INVISIBLE);
-                    showAdd(viewHolder);
+                    viewHolder.btnAdd.setEnabled(true);
                     mainViewModel.listSender.observe((MainActivity) context, new Observer<HashMap<String, Object>>() {
                         @Override
                         public void onChanged(HashMap<String, Object> hashMap) {
@@ -100,33 +94,13 @@ public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.V
                             } else {
                                 showRequestButton(viewHolder);
                             }
-
                         }
                     });
                 }
             }
         });
-
-
     }
 
-    private void showFriend(ViewHolder viewHolder) {
-        viewHolder.btnFriend.setVisibility(View.VISIBLE);
-        viewHolder.btnAdd.setVisibility(View.GONE);
-        viewHolder.btnReceived.setVisibility(View.GONE);
-    }
-
-    private void showReceived(ViewHolder viewHolder) {
-        viewHolder.btnReceived.setVisibility(View.VISIBLE);
-        viewHolder.btnAdd.setVisibility(View.GONE);
-        viewHolder.btnFriend.setVisibility(View.GONE);
-    }
-
-    private void showAdd(ViewHolder viewHolder) {
-        viewHolder.btnAdd.setVisibility(View.VISIBLE);
-        viewHolder.btnReceived.setVisibility(View.GONE);
-        viewHolder.btnFriend.setVisibility(View.GONE);
-    }
 
     private void showRequestButton(ViewHolder viewHolder) {
         viewHolder.btnAdd.setText("Kết bạn");
@@ -145,6 +119,8 @@ public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.V
     }
 
 
+
+
     public interface Callback {
         void onClick(int position, User user, boolean isReceived);
     }
@@ -153,7 +129,7 @@ public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.V
 
         AppCompatTextView txtName;
         CircleImageView imgAvatar, imgOnline;
-        MaterialButton btnAdd, btnFriend, btnReceived;
+        MaterialButton btnAdd;
         View stroke;
 
         public ViewHolder(@NonNull View itemView) {
@@ -163,8 +139,6 @@ public class PeopleAdapter extends FirebaseRecyclerAdapter<User, PeopleAdapter.V
             txtName = itemView.findViewById(R.id.txtName);
             btnAdd = itemView.findViewById(R.id.btnAdd);
             stroke = itemView.findViewById(R.id.stroke);
-            btnFriend = itemView.findViewById(R.id.btnFriend);
-            btnReceived = itemView.findViewById(R.id.btnReceived);
         }
     }
 

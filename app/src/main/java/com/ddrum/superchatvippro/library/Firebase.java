@@ -13,6 +13,8 @@ import com.ddrum.superchatvippro.view.activity.ChatActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,6 +26,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -33,8 +36,8 @@ public class Firebase {
     private static StorageReference storageRef = FirebaseStorage.getInstance().getReference();
 
 
-    public static void setPhotoUrlForUser(Context context, String currentId, Uri imageUri) {
-        ProgressDialog pd = new ProgressDialog(context);
+    public static void changeAvatar(View view, String currentId, Uri imageUri) {
+        ProgressDialog pd = new ProgressDialog(view.getContext());
         pd.show();
 
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
@@ -49,7 +52,7 @@ public class Firebase {
                             @Override
                             public void onSuccess(Uri uri) {
                                 dbRef.child(Constant.USER).child(currentId).child("photoUrl").setValue(String.valueOf(uri));
-                                Toast.makeText(context, "Đã thay đổi avatar", Toast.LENGTH_SHORT).show();
+                                Snackbar.make(view, "Đã thay đổi avatar", Snackbar.LENGTH_LONG).show();
                                 pd.dismiss();
                             }
                         });
@@ -58,7 +61,7 @@ public class Firebase {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(context, "Thay avatar thất bại", Toast.LENGTH_SHORT).show();
+                        Snackbar.make(view, "Thay avatar thất bại", Snackbar.LENGTH_SHORT).show();
                         pd.dismiss();
                     }
                 })
@@ -128,7 +131,7 @@ public class Firebase {
 
     }
 
-    public static void uploadTextMessage(String currentId, String otherId, String message, String time) {
+    public static void uploadTextMessage(String currentName, String otherName, String currentId, String otherId, String message, String time) {
         HashMap<String, String> map = new HashMap<>();
         map.put("text", message);
         map.put("type", "text");
@@ -137,13 +140,19 @@ public class Firebase {
         map.put("preTime", time);
 
 
+
+
+
+
         map.put("seen", "true");
         map.put("receiver", otherId);
+        map.put("name", otherName);
         dbRef.child(Constant.MESSAGE).child(currentId).child(otherId).push().setValue(map);
         dbRef.child(Constant.LAST_MESSAGE).child(currentId).child(otherId).setValue(map);
 
         map.put("seen", "false");
         map.put("receiver", currentId);
+        map.put("name", currentName);
         dbRef.child(Constant.MESSAGE).child(otherId).child(currentId).push().setValue(map);
         dbRef.child(Constant.LAST_MESSAGE).child(otherId).child(currentId).setValue(map);
     }
@@ -160,23 +169,28 @@ public class Firebase {
                                     .child("seen")
                                     .setValue("true");
                         }
-
                     }
-
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                     }
                 });
+    }
 
 
+    public static void setOnlineStatus(String status) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        dbRef.child(Constant.USER)
+                .child(currentUser.getUid())
+                .child("online")
+                .setValue(status);
     }
 
     public static void deleteChat(String currentId, String otherId) {
         dbRef.child(Constant.MESSAGE).child(currentId).child(otherId).removeValue();
-        dbRef.child(Constant.MESSAGE).child(otherId).child(currentId).removeValue();
         dbRef.child(Constant.LAST_MESSAGE).child(currentId).child(otherId).removeValue();
-        dbRef.child(Constant.LAST_MESSAGE).child(otherId).child(currentId).removeValue();
 
     }
+
+
 
 }

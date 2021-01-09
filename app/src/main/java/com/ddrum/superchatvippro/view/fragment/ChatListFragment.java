@@ -1,7 +1,15 @@
 package com.ddrum.superchatvippro.view.fragment;
 
+import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +18,9 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,14 +30,20 @@ import com.ddrum.superchatvippro.adapter.ChatListAdapter;
 import com.ddrum.superchatvippro.adapter.OnlineAdapter;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
+import com.ddrum.superchatvippro.library.DialogConfirm;
 import com.ddrum.superchatvippro.library.Firebase;
+import com.ddrum.superchatvippro.service.Notification;
 import com.ddrum.superchatvippro.view.activity.ChatActivity;
+import com.ddrum.superchatvippro.view.activity.InfoUserActivity;
+import com.ddrum.superchatvippro.view.activity.MainActivity;
 import com.ddrum.superchatvippro.view.activity.MainViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+
+import java.util.Random;
 
 public class
 
@@ -83,30 +100,31 @@ ChatListFragment extends Fragment {
         rcvChatList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
 
-//        edtSearch.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                //Query trường tên (username)
-//                Query query = reference.child(Constant.MESSAGE).child(currentUser.getUid()).orderByChild("username").startAt(s.toString()).endAt(s + "\uf8ff");
-//                chatListAdapter = new ChatListAdapter(viewModel, requireContext(), query);
-//                rcvChatList.setAdapter(chatListAdapter);
-//                clickItemChat();
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//
-//            }
-//        });
-        itemClick();
+        edtSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Query query = reference.child(Constant.LAST_MESSAGE)
+                                        .child(currentUser.getUid())
+                                        .orderByChild("name").startAt(s.toString()).endAt(s + "\uf8ff");
+                chatListAdapter = new ChatListAdapter(requireContext(), currentUser.getUid(), viewModel,  query);
+                rcvChatList.setAdapter(chatListAdapter);
+                itemClick(view);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        itemClick(view);
 
     }
 
-    private void itemClick(){
+    private void itemClick(View view){
         onlineAdapter.setCallback(new OnlineAdapter.Callback() {
             @Override
             public void onClick(String otherUserId) {
@@ -114,6 +132,8 @@ ChatListFragment extends Fragment {
                 intent.putExtra("otherId", otherUserId);
                 startActivity(intent);
                 requireActivity().overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
+
+
             }
         });
         chatListAdapter.setCallback(new ChatListAdapter.Callback() {
@@ -123,16 +143,21 @@ ChatListFragment extends Fragment {
                 intent.putExtra("otherId", otherUserId);
                 startActivity(intent);
                 requireActivity().overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
-
             }
 
             @Override
-            public void onLongClick(String otherUserId) {
-                Firebase.deleteChat(currentUser.getUid(), otherUserId);
+            public void onDeleteClick(String otherUserId) {
+                DialogConfirm dialog = new DialogConfirm(requireContext());
+                dialog.openSimpleDialog("Bạn có chắc chắn muốn xoá tin nhắn không?");
+                dialog.setCallback(new DialogConfirm.Callback() {
+                    @Override
+                    public void onClick() {
+                        Firebase.deleteChat(currentUser.getUid(), otherUserId);
+                    }
+                });
             }
         });
     }
-
 
 
     private void initDatabase() {
@@ -145,6 +170,9 @@ ChatListFragment extends Fragment {
         rcvChatList = view.findViewById(R.id.rcv_chat_list);
         rcvOnlineTop = view.findViewById(R.id.rcv_online_top);
     }
+
+
+
 
 
 }

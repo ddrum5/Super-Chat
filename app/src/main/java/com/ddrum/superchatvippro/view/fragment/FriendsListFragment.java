@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,6 +22,7 @@ import com.ddrum.superchatvippro.adapter.FriendAdapter;
 import com.ddrum.superchatvippro.adapter.RequestAdapter;
 import com.ddrum.superchatvippro.R;
 import com.ddrum.superchatvippro.constant.Constant;
+import com.ddrum.superchatvippro.library.DialogConfirm;
 import com.ddrum.superchatvippro.model.User;
 import com.ddrum.superchatvippro.view.activity.ChatActivity;
 import com.ddrum.superchatvippro.view.activity.MainViewModel;
@@ -30,8 +32,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
+import java.util.HashMap;
+
 
 public class FriendsListFragment extends Fragment {
+
     //Widget
     private AppCompatEditText edtSearch;
     private FriendAdapter friendAdapter;
@@ -39,12 +44,14 @@ public class FriendsListFragment extends Fragment {
     //Database && User
     private DatabaseReference reference;
     private FirebaseUser currentUser;
-    //ViewModel
+
     private MainViewModel viewModel;
     private AppCompatTextView tvRequest;
     private AppCompatTextView tvFriends;
     private RecyclerView rcvFriendList;
     private RecyclerView rcvFriendRequest;
+
+
 
 
     public static FriendsListFragment newInstance() {
@@ -71,16 +78,16 @@ public class FriendsListFragment extends Fragment {
         initView(view);
         initDatabase();
 
-        int a=0;
 
 //Friend request
         Query queryRequest = reference.child(Constant.RECEIVER).child(currentUser.getUid());
-        friendRequestAdapter = new RequestAdapter(requireActivity(), viewModel, queryRequest);
+        friendRequestAdapter = new RequestAdapter(requireContext(), viewModel, queryRequest);
         rcvFriendRequest.setAdapter(friendRequestAdapter);
         rcvFriendRequest.setLayoutManager(new LinearLayoutManager(requireContext())); //requireContext())
 
         friendRequestAdapter.setOnCLick(new RequestAdapter.Callback() {
             String currentUserId = currentUser.getUid();
+
             @Override
             public void onClickAccept(int position, String otherUserName, String otherUserId) {
                 // Thêm trường Friend
@@ -91,7 +98,7 @@ public class FriendsListFragment extends Fragment {
 
                 User currentUser = new User();
                 currentUser.setId(currentUserId);
-                currentUser.setUsername(viewModel.currentUser.getValue().getUsername());
+                currentUser.setUsername(viewModel.user.getValue().getUsername());
                 reference.child(Constant.FRIEND).child(otherUserId).child(currentUserId).setValue(currentUser);
 
                 // Xoá trường Request
@@ -104,11 +111,7 @@ public class FriendsListFragment extends Fragment {
                 reference.child(Constant.RECEIVER).child(currentUserId).child(otherUserId).setValue(null);
                 reference.child(Constant.SENDER).child(otherUserId).child(currentUserId).setValue(null);
             }
-
         });
-
-
-
 
 
 // Friend list
@@ -121,6 +124,7 @@ public class FriendsListFragment extends Fragment {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 //Query trường tên (username)
@@ -128,24 +132,64 @@ public class FriendsListFragment extends Fragment {
                         .orderByChild("username").startAt(s.toString()).endAt(s + "\uf8ff");
                 friendAdapter = new FriendAdapter(requireContext(), viewModel, query);
                 rcvFriendList.setAdapter(friendAdapter);
-                unFriendClick();
+                itemFriendEvent();
             }
 
             @Override
             public void afterTextChanged(Editable s) {
             }
         });
-        unFriendClick();
+        itemFriendEvent();
+//
+        CountRequestAndFriendList();
     }
 
+    //Method
 
-    private void unFriendClick() {
+
+    private void CountRequestAndFriendList() {
+        viewModel.listReceiver.observe(this, new Observer<HashMap<String, Object>>() {
+            @Override
+            public void onChanged(HashMap<String, Object> hashMap) {
+                int count;
+                if(hashMap != null) {
+                    count = hashMap.size() ;
+                    tvRequest.setText("Yêu cầu kết bạn" + " ("+ count +")");
+                } else {
+                    tvRequest.setText("Yêu cầu kết bạn");
+                }
+            }
+        });
+        viewModel.listFriends.observe(this, new Observer<HashMap<String, Object>>() {
+            @Override
+            public void onChanged(HashMap<String, Object> hashMap) {
+                int count;
+                if(hashMap != null) {
+                    count = hashMap.size() ;
+                    tvFriends.setText("Bạn bè" + " ("+ count +")");
+                } else {
+                    tvFriends.setText("Bạn bè");
+                }
+            }
+        });
+
+    }
+
+    private void itemFriendEvent() {
         friendAdapter.setOnUnfriendClick(new FriendAdapter.Callback() {
             @Override
             public void onClickUnFriend(int position, String userOtherId) {
-                String currentUserId = currentUser.getUid();
-                reference.child(Constant.FRIEND).child(currentUserId).child(userOtherId).setValue(null);
-                reference.child(Constant.FRIEND).child(userOtherId).child(currentUserId).setValue(null);
+                DialogConfirm dialog = new DialogConfirm(requireContext());
+                dialog.openSimpleDialog("Bạn muốn huỷ kết bạn không");
+                dialog.setCallback(new DialogConfirm.Callback() {
+                    @Override
+                    public void onClick() {
+                        String currentUserId = currentUser.getUid();
+                        reference.child(Constant.FRIEND).child(currentUserId).child(userOtherId).setValue(null);
+                        reference.child(Constant.FRIEND).child(userOtherId).child(currentUserId).setValue(null);
+                    }
+                });
+
             }
 
             @Override
@@ -157,8 +201,6 @@ public class FriendsListFragment extends Fragment {
             }
         });
     }
-
-
 
 
     private void initView(View view) {

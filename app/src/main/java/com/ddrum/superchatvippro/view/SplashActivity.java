@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -53,6 +55,11 @@ public class SplashActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
+//
+//        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+//        String key = reference.child(Constant.LAST_MESSAGE)
+//                    .child(user.getUid())
+//                    .getKey();
 
 
         new Handler().postDelayed(new Runnable() {
@@ -61,20 +68,19 @@ public class SplashActivity extends AppCompatActivity {
                 if (user == null) {
                     intent = new Intent(SplashActivity.this, LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    finish();
                 } else {
                     intent = new Intent(SplashActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    finish();
                 }
 
                 startActivity(intent);
+                overridePendingTransition(R.anim.fade_in, android.R.anim.fade_out);
                 finish();
             }
         }, 1000);
 
 
+
+
     }
-
-
 }

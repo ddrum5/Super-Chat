@@ -32,7 +32,6 @@ public class ChatAdapter extends FirebaseRecyclerAdapter<Message, ChatAdapter.Vi
 
     private Callback callback;
 
-    private RecyclerView rcvChatList;
 
 
     public void setCallback(Callback callback) {
@@ -40,12 +39,11 @@ public class ChatAdapter extends FirebaseRecyclerAdapter<Message, ChatAdapter.Vi
     }
 
 
-    public ChatAdapter(Context context, RecyclerView rcvChatList, MainViewModel viewModel, String currentId, Query ref) {
+    public ChatAdapter(Context context, MainViewModel viewModel, String currentId, Query ref) {
         super(Message.class, R.layout.item_message, ViewHolder.class, ref);
         this.currentId = currentId;
         this.context = context;
         this.viewModel = viewModel;
-        this.rcvChatList = rcvChatList;
     }
 
     @Override

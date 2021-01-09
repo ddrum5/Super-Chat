@@ -1,98 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<com.chauthai.swipereveallayout.SwipeRevealLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipeRevealLayout"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="5dp"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingTop="11dp">
+    app:dragEdge="right"
+    app:mode="same_level">
 
-    <FrameLayout
-        android:layout_width="55dp"
-        android:layout_height="55dp"
-        android:layout_marginEnd="5dp">
+    <!-- Your secondary layout here -->
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/imgAvatar"
-            android:layout_width="@dimen/avatar_size"
-            android:layout_height="@dimen/avatar_size"
-            android:layout_gravity="start"
-            android:src="@drawable/default_avatar" />
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/imgOnline"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginBottom="4dp"
-            android:src="@drawable/ic_online" />
-    </FrameLayout>
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/btnDelete"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"
+        android:background="@android:color/holo_red_light"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:text="Xoá" />
 
 
+    <!-- Your main layout here -->
     <LinearLayout
+        android:id="@+id/item_main_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        android:layout_marginBottom="5dp">
 
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/txtName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:textColor="@android:color/background_dark"
-            android:textSize="20sp"
-            tools:text="Name" />
+        <FrameLayout
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginEnd="5dp">
 
-        <RelativeLayout
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imgAvatar"
+                android:layout_width="@dimen/avatar_size"
+                android:layout_height="@dimen/avatar_size"
+                android:layout_gravity="start"
+                android:src="@drawable/default_avatar" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imgOnline"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="4dp"
+                android:src="@drawable/ic_online" />
+        </FrameLayout>
+
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <LinearLayout
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textColor="@android:color/background_dark"
+                android:textSize="18sp"
+                tools:text="Name" />
+
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/txtLastMessage"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginEnd="5dp"
-                    android:maxLength="32"
-                    android:maxLines="1"
-                    android:textColor="@color/gray"
-                    android:textSize="16sp"
-                    tools:text="Bạn: Super chat vip pro ∙ " />
+                    android:orientation="horizontal">
 
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/txtLastTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:maxLines="1"
-                    android:text="20:10 SA"
-                    android:textColor="@color/gray" />
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/txtLastMessage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="5dp"
+                        android:maxLength="32"
+                        android:maxLines="1"
+                        android:textColor="@color/gray"
+                        android:textSize="15sp"
+                        tools:text="Bạn: Super chat vip pro ∙ " />
 
-            </LinearLayout>
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/txtLastTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:maxLines="1"
+                        android:textSize="15sp"
+                        android:text="20:10 SA"
+                        android:textColor="@color/gray" />
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/dotSeen"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/ic_online"
+                    android:backgroundTint="#2196F3" />
+
+            </RelativeLayout>
 
             <View
-                android:id="@+id/dotSeen"
-                android:layout_alignParentEnd="true"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/ic_online"
-                android:backgroundTint="#2196F3" />
+                android:id="@+id/stroke"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/gray_spLite" />
 
-        </RelativeLayout>
-
-        <View
-            android:id="@+id/stroke"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="3dp"
-            android:background="@color/gray_spLite" />
+        </LinearLayout>
 
     </LinearLayout>
 
-
-</LinearLayout>
+</com.chauthai.swipereveallayout.SwipeRevealLayout>
