@@ -171,8 +171,4 @@ ChatListFragment extends Fragment {
         rcvOnlineTop = view.findViewById(R.id.rcv_online_top);
     }
 
-
-
-
-
 }

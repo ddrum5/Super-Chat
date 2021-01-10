@@ -54,6 +54,7 @@ public class InfoUserActivity extends AppCompatActivity {
     private DatabaseReference reference;
     private FirebaseUser currentUer;
 
+    private DialogConfirm dialogConfirm;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,12 +78,6 @@ public class InfoUserActivity extends AppCompatActivity {
             }
         });
 
-        imgAvatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                avatarClick();
-            }
-        });
 
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,13 +90,42 @@ public class InfoUserActivity extends AppCompatActivity {
         });
     }
 
+
+    //Method
+
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
     }
 
-    //Method
-    private void avatarClick() {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_info_user, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_change_user_name:
+                changeUserNameClick();
+                return true;
+            case R.id.menu_change_avatar:
+                changeAvatar();
+                return true;
+            case R.id.menu_change_password:
+                dialogConfirm.openChangePasswordDialog();
+                return true;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    private void changeAvatar() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -126,27 +150,6 @@ public class InfoUserActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_info_user, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_change_user_name:
-                changeUserNameClick();
-                return true;
-            case R.id.menu_change_password:
-                break;
-            default:
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     private void changeUserNameClick() {
         tvUserName.setVisibility(View.GONE);
@@ -224,6 +227,7 @@ public class InfoUserActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
+        dialogConfirm = new DialogConfirm(this);
     }
 
     @Override

@@ -6,6 +6,10 @@
         android:title="Đổi tên"
         app:showAsAction="never" />
     <item
+        android:id="@+id/menu_change_avatar"
+        android:title="Đổi ảnh đại diện"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_change_password"
         android:title="Đổi mật khẩu"
         app:showAsAction="never" />

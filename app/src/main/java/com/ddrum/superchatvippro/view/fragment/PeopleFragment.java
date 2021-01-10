@@ -60,7 +60,7 @@ public class PeopleFragment extends Fragment {
 
         viewModel = ViewModelProviders.of(requireActivity()).get(MainViewModel.class);
         initView(view);
-        intDatabase(view);
+        intDatabase();
 
         Query query = reference.child(Constant.USER);
         adapter = new PeopleAdapter(requireContext(), viewModel, query);
@@ -90,8 +90,8 @@ public class PeopleFragment extends Fragment {
         adapter.setOnAddFriendClick(new PeopleAdapter.Callback() {
             @Override
             public void onClick(int position, User user, boolean isSent) {
-                String currentUserId = currentUser.getUid(); //Lấy Id của user đang đăng nhập
-                String otherUserId = user.getId(); //Lấy Id của user click và
+                String currentUserId = currentUser.getUid();
+                String otherUserId = user.getId();
                 reference.child(Constant.RECEIVER).child(otherUserId).child(currentUserId)
                         .setValue(isSent ? currentUserId : null);
                 reference.child(Constant.SENDER).child(currentUserId).child(otherUserId)
@@ -99,7 +99,7 @@ public class PeopleFragment extends Fragment {
             }
         });
     }
-    private void intDatabase(View view) {
+    private void intDatabase() {
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference();
     }

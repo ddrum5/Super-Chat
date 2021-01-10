@@ -55,11 +55,7 @@ public class SplashActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
-//
-//        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-//        String key = reference.child(Constant.LAST_MESSAGE)
-//                    .child(user.getUid())
-//                    .getKey();
+
 
 
         new Handler().postDelayed(new Runnable() {
