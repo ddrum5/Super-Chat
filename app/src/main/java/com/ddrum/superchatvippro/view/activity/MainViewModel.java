@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 public class MainViewModel extends ViewModel {
 
+    //Khai báo biến
     public MutableLiveData<User> user = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listUser = new MutableLiveData<>();
     public MutableLiveData<HashMap<String, Object>> listSender = new MutableLiveData<>();

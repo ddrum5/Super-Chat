@@ -29,7 +29,7 @@ import com.google.firebase.database.Query;
 public class PeopleFragment extends Fragment {
 
     private AppCompatEditText edtSearch;
-    private RecyclerView rcvSearch;
+    private RecyclerView rcvPeople;
 
     private PeopleAdapter adapter;
 
@@ -62,10 +62,13 @@ public class PeopleFragment extends Fragment {
         initView(view);
         intDatabase();
 
+
+        //truy vấn đến bảng user
         Query query = reference.child(Constant.USER);
+        //Khởi tạo adapter
         adapter = new PeopleAdapter(requireContext(), viewModel, query);
-        rcvSearch.setAdapter(adapter);
-        rcvSearch.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rcvPeople.setAdapter(adapter);
+        rcvPeople.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         edtSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -76,7 +79,7 @@ public class PeopleFragment extends Fragment {
                 //Query trường tên (username)
                 Query query = reference.child(Constant.USER).orderByChild("username").startAt(s.toString()).endAt(s + "\uf8ff");
                 adapter = new PeopleAdapter(requireContext(), viewModel, query);
-                rcvSearch.setAdapter(adapter);
+                rcvPeople.setAdapter(adapter);
                 addFriendClick();
             }
             @Override
@@ -99,12 +102,14 @@ public class PeopleFragment extends Fragment {
             }
         });
     }
+
+
     private void intDatabase() {
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference();
     }
     private void initView(View view) {
         edtSearch = view.findViewById(R.id.edtSearch);
-        rcvSearch = view.findViewById(R.id.rcvSearch);
+        rcvPeople = view.findViewById(R.id.rcvSearch);
     }
 }

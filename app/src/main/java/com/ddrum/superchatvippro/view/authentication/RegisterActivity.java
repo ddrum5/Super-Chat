@@ -50,10 +50,13 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
         initView();
         firebase();
 
         btnRegisterIsEnable();
+
+        //khi click vào nút đăng ký
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,6 +100,7 @@ public class RegisterActivity extends AppCompatActivity {
     };
 
 
+
     private void registerClick() {
         String username = edtUsername.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
@@ -129,14 +133,9 @@ public class RegisterActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
                                         String userId = task.getResult().getUser().getUid();
-                                        task.getResult().getUser().getIdToken(true)
-                                                .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<GetTokenResult> task) {
-                                                        String token = task.getResult().getToken();
-                                                        createUserAndLogin(userId, username, email, pass, token);
-                                                    }
-                                                });
+
+                                        createUserAndLogin(userId, username, email, pass);
+
                                     } else {
                                         Toast.makeText(RegisterActivity.this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
                                         edtEmail.requestFocus();
@@ -148,9 +147,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
-    private void createUserAndLogin(String userId, String username, String email, String pass, String token) {
+    private void createUserAndLogin(String userId, String username, String email, String pass) {
         User user = new User();
         user.setId(userId);
         user.setUsername(username);
@@ -158,17 +155,14 @@ public class RegisterActivity extends AppCompatActivity {
         user.setPassword(pass);
         user.setPhotoUrl(Constant.DEFAULT_AVATAR);
         user.setOnline("true");
-        user.setToken(token);
         //Add data User vào database
-        reference.child(Constant.USER).child(userId).setValue(user) //Set Value chỉ đến đây thôi
-                //Dòng dưới này là để check xem api call có thành công hay không
+        reference.child(Constant.USER).child(userId).setValue(user)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             Toast.makeText(RegisterActivity.this, "Tạo tài khoản thành công", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                             overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
                         } else {
@@ -179,10 +173,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void firebase() {
-        auth = FirebaseAuth.getInstance(); //cái này là khai báo fỉebaseAuth, muốn đăng ký đăng nhập hay lấy thông tin user (authen) thì phải có
-        reference = FirebaseDatabase.getInstance().getReference(); //Để ntn sau này tiện child nhiều bảng khác hơn
+        auth = FirebaseAuth.getInstance();
+        reference = FirebaseDatabase.getInstance().getReference();
     }
-
+//anh xa
     private void initView() {
         edtUsername = findViewById(R.id.edt_username);
         edtEmail = findViewById(R.id.edt_email);

@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
+
         initView();
         firebase();
 
@@ -110,33 +111,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        reference.child(Constant.LAST_MESSAGE).child(currentId).addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                HashMap<String, String> map = (HashMap<String, String>) snapshot.getValue();
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
 
     }
 
@@ -305,7 +279,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         Firebase.setOnlineStatus("true");
         super.onResume();
-
     }
 
     @Override

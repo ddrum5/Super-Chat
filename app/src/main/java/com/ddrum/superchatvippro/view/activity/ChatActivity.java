@@ -85,6 +85,7 @@ public class ChatActivity extends AppCompatActivity {
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getListLastMessage(reference, otherId);
         viewModel.getUser(reference, otherId);
+        //lay du lieu tu viewmodel
         viewModel.user.observe(this, new Observer<User>() {
             @Override
             public void onChanged(User user) {
